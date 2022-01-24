@@ -6,6 +6,11 @@ import (
 	"github.com/ying32/govcl/vcl"
 )
 
+func init() {
+	go bot.WSDailCall()
+	go bot.HandleWSMsg()
+}
+
 func main() {
 	vcl.Application.Initialize()
 	vcl.Application.CreateForm(&bot.BotForm)

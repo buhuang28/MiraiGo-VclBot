@@ -56,6 +56,9 @@ func handlePrivateMessage(cli *client.QQClient, event *message.PrivateMessage) {
 		//bot.WSWLock.Unlock()
 	}()
 	msg := MiraiMsgToRawMsg(cli, event.Elements)
+	go func() {
+		AddLogItem(cli.Uin, 0, event.Sender.Uin, ACCEPT, ACCEPT_PRIVATE, msg)
+	}()
 	log.Info("收到", event.Sender.Uin, "私聊消息:", msg)
 	if WsCon == nil {
 		return
@@ -86,6 +89,9 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 		}()
 		//bot.WSWLock.Lock()
 		msg := MiraiMsgToRawMsg2(cli, event.GroupCode, event.Elements)
+		go func() {
+			AddLogItem(cli.Uin, event.GroupCode, event.Sender.Uin, ACCEPT, ACCEPT_GROUP, msg)
+		}()
 		log.Info("收到群聊消息")
 		if WsCon == nil {
 			log.Infof("WS链接爆炸")
@@ -120,6 +126,9 @@ func handleTempMessage(cli *client.QQClient, event *client.TempMessageEvent) {
 		//bot.WSWLock.Unlock()
 	}()
 	msg := MiraiMsgToRawMsg(cli, event.Message.Elements)
+	go func() {
+		AddLogItem(cli.Uin, event.Message.GroupCode, event.Message.Sender.Uin, ACCEPT, ACCEPT_TEMP, msg)
+	}()
 	//log.Info("收到", event.Message.GroupCode, "群,", event.Message.Sender.Uin, "的临时私聊消息:", msg)
 	if WsCon == nil {
 		return
@@ -149,6 +158,9 @@ func handleMemberJoinGroup(cli *client.QQClient, event *client.MemberJoinGroupEv
 		//bot.WSWLock.Unlock()
 	}()
 	log.Info("收到入群信息")
+	go func() {
+		AddLogItem(cli.Uin, event.Group.Code, event.Member.Uin, ACCEPT, ACCEPT_MEMBER_INSERT, "")
+	}()
 	if WsCon == nil {
 		return
 	}
@@ -177,6 +189,9 @@ func handleMemberLeaveGroup(cli *client.QQClient, event *client.MemberLeaveGroup
 		//bot.WSWLock.Unlock()
 	}()
 	log.Info("收到有人退群")
+	go func() {
+		AddLogItem(cli.Uin, event.Group.Code, event.Member.Uin, ACCEPT, ACCEPT_MEMBER_DECREASE, "")
+	}()
 	if WsCon == nil {
 		return
 	}
@@ -202,6 +217,9 @@ func handleUserJoinGroupRequest(cli *client.QQClient, event *client.UserJoinGrou
 		}
 	}()
 	log.Info("有人申请入群")
+	go func() {
+		AddLogItem(cli.Uin, event.GroupCode, event.RequesterUin, ACCEPT, ACCEPT_GROUP_REQUEST, "")
+	}()
 	if WsCon == nil {
 		return
 	}
@@ -250,6 +268,9 @@ func handleGroupInvitedRequest(cli *client.QQClient, event *client.GroupInvitedR
 		}
 	}()
 	log.Info("收到机器人被邀请入群")
+	go func() {
+		AddLogItem(cli.Uin, event.GroupCode, event.InvitorUin, ACCEPT, ACCPET_GROUP_INVITED, "")
+	}()
 	if WsCon == nil {
 		return
 	}

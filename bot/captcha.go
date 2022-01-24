@@ -31,7 +31,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		TempBotData[index].NickName = cli.Nickname
 		TempBotData[index].Status = "在线"
 		TempBotData[index].Note = "登录成功"
-		fmt.Println(TempBotData)
 		return true
 	}
 	if rsp.Error == client.SMSOrVerifyNeededError {

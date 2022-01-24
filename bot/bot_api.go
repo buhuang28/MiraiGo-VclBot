@@ -153,6 +153,7 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 			util.PrintStackTrace(e)
 		}
 	}()
+
 	if cli.FindGroup(groupId) == nil {
 		return 0
 	}

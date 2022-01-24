@@ -117,8 +117,16 @@ func HandleWSMsg() {
 			miraiMsg := RawMsgToMiraiMsg(cli, data.Message)
 			switch data.MsgType {
 			case ws_data.GMC_PRIVATE_MESSAGE, ws_data.GMC_TEMP_MESSAGE:
+				var logMessageType int32
+				if data.GroupId == 0 {
+					logMessageType = SEND_PRIVATE
+				} else {
+					logMessageType = SEND_TEMP
+				}
+				AddLogItem(data.BotId, data.GroupId, data.UserId, SEND, logMessageType, data.Message)
 				BuHuangSendPrivateMsg(cli, miraiMsg, data.UserId, data.GroupId)
 			case ws_data.GMC_GROUP_MESSAGE:
+				AddLogItem(data.BotId, data.GroupId, data.UserId, SEND, SEND_GROUP, data.Message)
 				BuHuangSendGroupMsg(cli, miraiMsg, data.MessageId, data.GroupId)
 			case ws_data.GMC_WITHDRAW_MESSAGE:
 				BuBuhuangWithDrawMsg(cli, data.GroupId, data.MessageId, data.InternalId)

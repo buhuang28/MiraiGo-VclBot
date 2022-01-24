@@ -3,7 +3,9 @@ package bot
 import (
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/types"
+	"github.com/ying32/govcl/vcl/types/colors"
 	"github.com/ying32/govcl/vcl/win"
+	"os/exec"
 )
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
@@ -67,6 +69,13 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	f.NoSelectMenu.Items().Add(item2)
 	f.NoSelectMenu.Items().Add(item3)
 
+	githubItem := vcl.NewMenuItem(f.BotListView)
+	githubItem.SetCaption("项目开源地址:https://github.com/buhuang28/MiraiGo-VclBot")
+	githubItem.SetOnClick(func(sender vcl.IObject) {
+		exec.Command("cmd", "/c", "start", "https://github.com/buhuang28/MiraiGo-VclBot").Start()
+	})
+	f.NoSelectMenu.Items().Add(githubItem)
+
 	item4 := vcl.NewMenuItem(f.BotListView)
 	item4.SetCaption("登录")
 	item4.SetOnClick(func(sender vcl.IObject) {
@@ -115,7 +124,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		boundRect := item.DisplayRect(types.DrBounds)
 		//当前状态，鼠标选中的那行显示的颜色
 		if state.In(types.CdsFocused) {
-			canvas.Brush().SetColor(0x1F0FF12F)
+			canvas.Brush().SetColor(colors.ClAqua)
 		} else {
 			canvas.Brush().SetColor(sender.Color())
 		}
@@ -124,6 +133,9 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		data := TempBotData[item.Index()]
 		drawFlags := types.NewSet(types.TfCenter, types.TfSingleLine, types.TfVerticalCenter)
 		var i int32
+		font := canvas.Font()
+		font.SetColor(colors.ClGreen)
+
 		for i = 0; i < sender.Columns().Count(); i++ {
 			r := f.GetSubItemRect(sender.Handle(), item.Index(), i)
 			switch i {
@@ -148,6 +160,16 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			}
 		}
 	})
+	//f.BotListView.SetOnClick(func(sender vcl.IObject) {
+	//	var t TTempItem
+	//	t.Status = "123"
+	//	t.QQ = "123"
+	//	t.Protocol = "123"
+	//	t.Note = "2135"
+	//	t.NickName = "5412"
+	//	TempBotData = append(TempBotData,t)
+	//	BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+	//})
 }
 
 func (f *TBotForm) GetSubItemRect(hwndLV types.HWND, iItem, iSubItem int32) (ret types.TRect) {

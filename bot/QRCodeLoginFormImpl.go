@@ -7,11 +7,11 @@ import (
 
 func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.SetCaption("扫码")
-	f.EnabledMaximize(false)
-	f.SetBorderStyle(types.BsSingle)
 	f.SetHeight(180)
 	f.SetWidth(280)
 	f.ScreenCenter()
+	f.EnabledMaximize(false)
+	f.SetBorderStyle(types.BsSingle)
 	f.SetShowInTaskBar(types.StAlways)
 	f.SetDoubleBuffered(true)
 	f.Image = vcl.NewImage(f)
