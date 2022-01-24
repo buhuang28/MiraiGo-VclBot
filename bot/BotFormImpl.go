@@ -8,6 +8,10 @@ import (
 	"os/exec"
 )
 
+type TForm1Fields struct {
+	subItemHit win.TLVHitTestInfo
+}
+
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	f.SetCaption("机器人列表")
 	f.SetDoubleBuffered(true)
@@ -106,12 +110,15 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 
 	f.BotListView.SetOnMouseDown(func(sender vcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 		if button == types.MbRight {
-			selected := f.BotListView.Selected()
-			p := vcl.Mouse.CursorPos()
-			if selected == nil {
-				f.NoSelectMenu.Popup(p.X, p.Y)
-			} else {
+			p := f.BotListView.ScreenToClient(vcl.Mouse.CursorPos())
+			f.subItemHit.Pt.X = p.X
+			f.subItemHit.Pt.Y = p.Y
+			win.ListView_SubItemHitTest(f.BotListView.Handle(), &f.subItemHit)
+			p = vcl.Mouse.CursorPos()
+			if f.subItemHit.IItem != -1 {
 				f.SelectedMenu.Popup(p.X, p.Y)
+			} else {
+				f.NoSelectMenu.Popup(p.X, p.Y)
 			}
 		}
 	})
@@ -123,18 +130,17 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		canvas := sender.Canvas()
 		boundRect := item.DisplayRect(types.DrBounds)
 		//当前状态，鼠标选中的那行显示的颜色
-		if state.In(types.CdsFocused) {
-			canvas.Brush().SetColor(colors.ClAqua)
-		} else {
-			canvas.Brush().SetColor(sender.Color())
-		}
-
-		canvas.FillRect(boundRect)
 		data := TempBotData[item.Index()]
 		drawFlags := types.NewSet(types.TfCenter, types.TfSingleLine, types.TfVerticalCenter)
 		var i int32
 		font := canvas.Font()
-		font.SetColor(colors.ClGreen)
+		if state.In(types.CdsFocused) {
+			canvas.Brush().SetColor(colors.ClBisque)
+		} else {
+			canvas.Brush().SetColor(sender.Color())
+		}
+		canvas.FillRect(boundRect)
+		font.SetColor(colors.ClBlack)
 
 		for i = 0; i < sender.Columns().Count(); i++ {
 			r := f.GetSubItemRect(sender.Handle(), item.Index(), i)
@@ -160,16 +166,19 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			}
 		}
 	})
-	//f.BotListView.SetOnClick(func(sender vcl.IObject) {
-	//	var t TTempItem
-	//	t.Status = "123"
-	//	t.QQ = "123"
-	//	t.Protocol = "123"
-	//	t.Note = "2135"
-	//	t.NickName = "5412"
-	//	TempBotData = append(TempBotData,t)
-	//	BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-	//})
+	f.BotListView.SetOnClick(func(sender vcl.IObject) {
+		if len(TempBotData) == 5 {
+			return
+		}
+		var t TTempItem
+		t.Status = "123"
+		t.QQ = "123"
+		t.Protocol = "123"
+		t.Note = "2135"
+		t.NickName = "5412"
+		TempBotData = append(TempBotData, t)
+		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+	})
 }
 
 func (f *TBotForm) GetSubItemRect(hwndLV types.HWND, iItem, iSubItem int32) (ret types.TRect) {

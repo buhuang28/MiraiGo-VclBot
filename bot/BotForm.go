@@ -25,4 +25,5 @@ type TBotForm struct {
 	NoSelectMenu *vcl.TPopupMenu
 	SelectedMenu *vcl.TPopupMenu
 	Avatar       []*vcl.TPngImage
+	TForm1Fields
 }
