@@ -127,11 +127,11 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		}
 		TempCaptchaQQ = 0
 		go func() {
+			TempBotData[index].Status = "离线"
+			TempBotData[index].Note = "设备扫码验证失败，登录失败"
 			vcl.ThreadSync(func() {
 				DeviceVerifyForm.QRCode.Hide()
 				DeviceVerifyForm.Hide()
-				TempBotData[index].Status = "离线"
-				TempBotData[index].Note = "设备扫码验证失败，登录失败"
 			})
 		}()
 		log.Info("设备扫码验证失败")

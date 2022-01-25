@@ -1,8 +1,12 @@
 package bot
 
 import (
+	"MiraiGo-VclBot/device"
+	"github.com/Mrs4s/MiraiGo/client"
+	log "github.com/sirupsen/logrus"
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/types"
+	"time"
 )
 
 func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
@@ -41,4 +45,31 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.AutoLogin.SetCaption("自动登录")
 	f.AutoLogin.SetTop(80)
 	f.AutoLogin.SetLeft(180)
+}
+
+var (
+	tempDeviceInfo *client.DeviceInfo
+	qrCodeBot      *client.QQClient
+	tempLoginSig   []byte
+)
+
+func GetQRCodeUrl(clientProtocol int32) []byte {
+	if qrCodeBot != nil {
+		qrCodeBot.Release()
+	}
+	qrCodeBot = client.NewClientEmpty()
+	tempDeviceInfo = device.GetDevice(time.Now().Unix(), clientProtocol)
+	qrCodeBot.UseDevice(tempDeviceInfo)
+	log.Infof("初始化日志")
+	InitLog(qrCodeBot)
+	fetchQRCodeResp, err := qrCodeBot.FetchQRCode()
+	if err != nil {
+		vcl.ShowMessage("获取二维码失败")
+		log.Info("获取二维码失败:", err)
+		return nil
+	}
+
+	//QRCodeLoginForm.Image.Picture().LoadFromBytes(fetchQRCodeResp.ImageData)
+	tempLoginSig = fetchQRCodeResp.Sig
+	return fetchQRCodeResp.ImageData
 }

@@ -1,11 +1,19 @@
 package bot
 
 import (
+	"MiraiGo-VclBot/util"
+	"fmt"
+	"github.com/Mrs4s/MiraiGo/client"
+	log "github.com/sirupsen/logrus"
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/types"
 	"github.com/ying32/govcl/vcl/types/colors"
 	"github.com/ying32/govcl/vcl/win"
+	"io/ioutil"
 	"os/exec"
+	"path"
+	"strconv"
+	"time"
 )
 
 type TForm1Fields struct {
@@ -55,8 +63,82 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	item := vcl.NewMenuItem(f.BotListView)
 	item.SetCaption("扫码登录")
 	item.SetOnClick(func(sender vcl.IObject) {
+		qrCodeUrlBytes := GetQRCodeUrl(QRCodeLoginForm.ProtocolCheck.Items().IndexOf(QRCodeLoginForm.ProtocolCheck.Text()))
+		QRCodeLoginForm.Image.Picture().LoadFromBytes(qrCodeUrlBytes)
 		QRCodeLoginForm.Show()
+		go func() {
+			if qrCodeBot.Online.Load() {
+				return
+			}
+			thisSig := tempLoginSig
+			for i := 0; i < 100; i++ {
+				queryQRCodeStatusResp, err := qrCodeBot.QueryQRCodeStatus(thisSig)
+				if err != nil {
+					log.Info("failed to query qrcode status:", err)
+					break
+				}
+				if queryQRCodeStatusResp.State != client.QRCodeConfirmed {
+					time.Sleep(time.Second * 3)
+					continue
+				}
+				loginResp, err := qrCodeBot.QRCodeLogin(queryQRCodeStatusResp.LoginInfo)
+				if err != nil || !loginResp.Success {
+					vcl.ShowMessage(fmt.Sprintf("扫码登录失败: %+v", err))
+					log.Info("扫码登录失败:", err)
+					break
+				}
+
+				log.Infof("扫码登录成功")
+				originCli, ok := Clients.Load(qrCodeBot.Uin)
+				if ok {
+					originCli.Release()
+				}
+				botLock.Lock()
+				index, ok := botIndexMap[qrCodeBot.Uin]
+				if !ok {
+					index = botIndexStart
+					botIndexStart++
+				}
+				botIndexMap[qrCodeBot.Uin] = index
+				var botData TTempItem
+				botData.IconIndex = int32(index)
+				botData.NickName = qrCodeBot.Nickname
+				botData.QQ = strconv.FormatInt(qrCodeBot.Uin, 10)
+				botData.Protocol = QRCodeLoginForm.ProtocolCheck.Text()
+				botData.Status = "在线"
+				botData.Note = "登录成功"
+				if QRCodeLoginForm.AutoLogin.Checked() {
+					botData.Auto = "√"
+				} else {
+					botData.Auto = "X"
+				}
+				avatarUrl := AvatarUrlPre + strconv.FormatInt(qrCodeBot.Uin, 10)
+				bytes, err := util.GetBytes(avatarUrl)
+				if err == nil {
+					pic := vcl.NewPicture()
+					pic.LoadFromBytes(bytes)
+					BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
+					pic.Free()
+					BotForm.BotListView.SetStateImages(BotForm.Icons)
+				}
+				TempBotData = append(TempBotData, botData)
+				BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+
+				var qqInfo QQInfo
+				qqInfo.StoreLoginInfo(qrCodeBot.Uin, [16]byte{}, qrCodeBot.GenToken(), int32(tempDeviceInfo.Protocol))
+				Clients.Store(qrCodeBot.Uin, qrCodeBot)
+				go AfterLogin(qrCodeBot, int32(tempDeviceInfo.Protocol))
+				devicePath := path.Join("device", fmt.Sprintf("device-%d.json", qrCodeBot.Uin))
+				_ = ioutil.WriteFile(devicePath, tempDeviceInfo.ToJson(), 0644)
+				qrCodeBot = nil
+				break
+			}
+			vcl.ThreadSync(func() {
+				QRCodeLoginForm.Hide()
+			})
+		}()
 	})
+
 	item2 := vcl.NewMenuItem(f.BotListView)
 	item2.SetCaption("密码登录")
 	item2.SetOnClick(func(sender vcl.IObject) {
