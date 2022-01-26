@@ -48,15 +48,15 @@ func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, cli
 	var botData TTempItem
 	botData.IconIndex = int32(index)
 	avatarUrl := AvatarUrlPre + strconv.FormatInt(cli.Uin, 10)
-	avatarPath := AvatarPath + strconv.FormatInt(cli.Uin, 10) + ".jpg"
-	err2 := util.DownloadFile(avatarUrl, avatarPath, 0, nil)
+	bytes, err2 := util.GetBytes(avatarUrl)
 	if err2 != nil {
 		fmt.Println(err2)
+	} else {
+		pic := vcl.NewPicture()
+		pic.LoadFromBytes(bytes)
+		BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
+		pic.Free()
 	}
-	pic := vcl.NewPicture()
-	pic.LoadFromFile(avatarPath)
-	BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
-	pic.Free()
 	BotForm.BotListView.SetStateImages(BotForm.Icons)
 	botData.QQ = strconv.FormatInt(cli.Uin, 10)
 	botData.Protocol = GetProtocol(clientProtocol)
@@ -124,7 +124,7 @@ func AfterLogin(cli *client.QQClient, clientProtocol int32) bool {
 		if clientProtocol == -1 {
 			clientProtocol = qqInfo.ClientProtocol
 		}
-		qqInfo.StoreLoginInfo(cli.Uin, qqInfo.PassWord, getToken, clientProtocol)
+		qqInfo.StoreLoginInfo(cli.Uin, qqInfo.PassWord, getToken, clientProtocol, qqInfo.AutoLogin)
 		fmt.Println("获取token成功")
 	}()
 	return true

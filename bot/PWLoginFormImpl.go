@@ -87,7 +87,7 @@ func (f *TPWLoginForm) OnFormCreate(sender vcl.IObject) {
 		PWMd5 := md5.Sum([]byte(PW))
 		loginProtocol := f.ProtocolCheck.Items().IndexOf(f.ProtocolCheck.Text())
 		var qqInfo QQInfo
-		qqInfo.StoreLoginInfo(QQInt, PWMd5, nil, loginProtocol)
+		qqInfo.StoreLoginInfo(QQInt, PWMd5, nil, loginProtocol, f.AutoLogin.Checked())
 		f.Hide()
 		f.QQ.Clear()
 		f.PW.Clear()

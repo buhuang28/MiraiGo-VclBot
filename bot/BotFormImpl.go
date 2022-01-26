@@ -125,7 +125,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 
 				var qqInfo QQInfo
-				qqInfo.StoreLoginInfo(qrCodeBot.Uin, [16]byte{}, qrCodeBot.GenToken(), int32(tempDeviceInfo.Protocol))
+				qqInfo.StoreLoginInfo(qrCodeBot.Uin, [16]byte{}, qrCodeBot.GenToken(), int32(tempDeviceInfo.Protocol), QRCodeLoginForm.AutoLogin.Checked())
 				Clients.Store(qrCodeBot.Uin, qrCodeBot)
 				go AfterLogin(qrCodeBot, int32(tempDeviceInfo.Protocol))
 				devicePath := path.Join("device", fmt.Sprintf("device-%d.json", qrCodeBot.Uin))
@@ -165,6 +165,12 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	item4 := vcl.NewMenuItem(f.BotListView)
 	item4.SetCaption("登录")
 	item4.SetOnClick(func(sender vcl.IObject) {
+		selected := f.BotListView.Selected()
+		if selected == nil {
+			fmt.Println("未选中QQ")
+			return
+		}
+		//Login
 		LogForm.Show()
 	})
 

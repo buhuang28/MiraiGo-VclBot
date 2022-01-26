@@ -29,7 +29,9 @@ func main() {
 	bot.CaptchaForm.Hide()
 	bot.SMSForm.Hide()
 	bot.DeviceVerifyForm.Hide()
-
+	go func() {
+		bot.AutoLogin()
+	}()
 	//bot.PWLoginForm.Show()
 	//bot.BotSlideForm.Show()
 	//bot.QRCodeLoginForm.Show()

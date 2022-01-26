@@ -94,7 +94,7 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 		}()
 		log.Info("收到群聊消息")
 		if WsCon == nil {
-			log.Infof("WS链接爆炸")
+			log.Infof("未找到server")
 			return
 		}
 		cli.MarkGroupMessageReaded(event.GroupCode, int64(event.Id))
