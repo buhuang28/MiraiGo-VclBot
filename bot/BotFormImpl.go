@@ -2,6 +2,7 @@ package bot
 
 import (
 	"MiraiGo-VclBot/util"
+	"encoding/json"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client"
 	log "github.com/sirupsen/logrus"
@@ -163,37 +164,75 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	f.NoSelectMenu.Items().Add(githubItem)
 
 	item4 := vcl.NewMenuItem(f.BotListView)
-	item4.SetCaption("登录")
+	item4.SetCaption("登录/重登")
 	item4.SetOnClick(func(sender vcl.IObject) {
-		selected := f.BotListView.Selected()
-		if selected == nil {
-			fmt.Println("未选中QQ")
-			return
-		}
-		//Login
-		LogForm.Show()
+		go func() {
+			sel := vcl.AsListView(BotForm.BotListView).Selected()
+			if sel.IsValid() {
+				selectQQStr := TempBotData[sel.Index()].QQ
+				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+				cli, ok := Clients.Load(selectQQInt)
+				if ok {
+					cli.Disconnect()
+					TempBotData[sel.Index()].Status = "离线"
+					TempBotData[sel.Index()].Note = "离线"
+				}
+				var qqInfo QQInfo
+				fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
+				err := json.Unmarshal(fileByte, &qqInfo)
+				if err != nil {
+					vcl.ThreadSync(func() {
+						vcl.ShowMessage("反序列化失败，无法重新登录，请检测C盘data目录的info文件")
+					})
+					return
+				}
+				qqInfo.Login()
+			}
+		}()
 	})
 
 	item5 := vcl.NewMenuItem(f.BotListView)
 	item5.SetCaption("下线")
 	item5.SetOnClick(func(sender vcl.IObject) {
-		LogForm.Show()
+		go func() {
+			sel := vcl.AsListView(BotForm.BotListView).Selected()
+			if sel.IsValid() {
+				selectQQStr := TempBotData[sel.Index()].QQ
+				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+				cli, ok := Clients.Load(selectQQInt)
+				if ok {
+					cli.Disconnect()
+					TempBotData[sel.Index()].Status = "离线"
+					TempBotData[sel.Index()].Note = "离线"
+				}
+			}
+		}()
 	})
 
-	item6 := vcl.NewMenuItem(f.BotListView)
-	item6.SetCaption("重登")
-	item6.SetOnClick(func(sender vcl.IObject) {
-		LogForm.Show()
-	})
 	item7 := vcl.NewMenuItem(f.BotListView)
 	item7.SetCaption("删除")
 	item7.SetOnClick(func(sender vcl.IObject) {
-		LogForm.Show()
+		go func() {
+			sel := vcl.AsListView(BotForm.BotListView).Selected()
+			if sel.IsValid() {
+				selectQQStr := TempBotData[sel.Index()].QQ
+				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+				cli, ok := Clients.Load(selectQQInt)
+				if ok {
+					cli.Disconnect()
+					TempBotData[sel.Index()].Status = "离线"
+					TempBotData[sel.Index()].Note = "离线"
+				}
+				util.DelFile(QQINFOPATH + selectQQStr + QQINFOSKIN)
+				TempBotData = append(TempBotData[:sel.Index()], TempBotData[sel.Index()+1:]...)
+				f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+			}
+		}()
 	})
 	f.SelectedMenu = vcl.NewPopupMenu(f.BotListView)
 	f.SelectedMenu.Items().Add(item4)
 	f.SelectedMenu.Items().Add(item5)
-	f.SelectedMenu.Items().Add(item6)
+	//f.SelectedMenu.Items().Add(item6)
 	f.SelectedMenu.Items().Add(item7)
 
 	f.BotListView.SetOnMouseDown(func(sender vcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
@@ -254,6 +293,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			}
 		}
 	})
+
 	f.BotListView.SetOnClick(func(sender vcl.IObject) {
 		if len(TempBotData) == 5 {
 			return

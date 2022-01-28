@@ -30,7 +30,7 @@ func main() {
 	bot.SMSForm.Hide()
 	bot.DeviceVerifyForm.Hide()
 	go func() {
-		bot.AutoLogin()
+		//bot.AutoLogin()
 	}()
 	//bot.PWLoginForm.Show()
 	//bot.BotSlideForm.Show()
