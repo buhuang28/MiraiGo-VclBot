@@ -22,7 +22,7 @@ type TForm1Fields struct {
 }
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
-	f.SetCaption("机器人列表")
+	f.SetCaption("机器人列表 -- 测试版   不慌")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(400)
 	f.SetWidth(700)
@@ -294,19 +294,19 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		}
 	})
 
-	f.BotListView.SetOnClick(func(sender vcl.IObject) {
-		if len(TempBotData) == 5 {
-			return
-		}
-		var t TTempItem
-		t.Status = "123"
-		t.QQ = "123"
-		t.Protocol = "123"
-		t.Note = "2135"
-		t.NickName = "5412"
-		TempBotData = append(TempBotData, t)
-		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-	})
+	//f.BotListView.SetOnClick(func(sender vcl.IObject) {
+	//	if len(TempBotData) == 5 {
+	//		return
+	//	}
+	//	var t TTempItem
+	//	t.Status = "123"
+	//	t.QQ = "123"
+	//	t.Protocol = "123"
+	//	t.Note = "2135"
+	//	t.NickName = "5412"
+	//	TempBotData = append(TempBotData, t)
+	//	BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+	//})
 }
 
 func (f *TBotForm) GetSubItemRect(hwndLV types.HWND, iItem, iSubItem int32) (ret types.TRect) {

@@ -64,7 +64,7 @@ func (f *TLogForm) OnFormCreate(sender vcl.IObject) {
 		case "接收":
 			font.SetColor(colors.ClBlue)
 		case "发送":
-			font.SetColor(0x9932CC)
+			font.SetColor(colors.ClGreen)
 		}
 		for i = 0; i < sender.Columns().Count(); i++ {
 			r := f.GetSubItemRect(sender.Handle(), item.Index(), i)
@@ -88,6 +88,7 @@ func (f *TLogForm) OnFormCreate(sender vcl.IObject) {
 	f.ClearText.SetCaption("清除日志")
 	f.ClearText.SetOnClick(func(sender vcl.IObject) {
 		LogItems = LogItems[:0]
+		LogForm.LogListView.Clear()
 	})
 
 	f.RollCheck = vcl.NewCheckBox(f)
@@ -140,5 +141,6 @@ func AddLogItem(botId, groupId, userId int64, acceptOrSend, messageType int32, m
 	}
 	logItem.Message = logMessage
 	LogItems = append(LogItems, logItem)
-	LogForm.LogListView.Items().SetCount(int32(len(LogItems)))
+	itemIndex := int32(len(LogItems))
+	LogForm.LogListView.Items().SetCount(itemIndex)
 }

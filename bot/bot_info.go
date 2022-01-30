@@ -53,7 +53,6 @@ func (q *QQInfo) Login() bool {
 		deviceInfo := device.GetDevice(q.QQ, q.ClientProtocol)
 		botClient.UseDevice(deviceInfo)
 		err := botClient.TokenLogin(q.Token)
-
 		botLock.Lock()
 		index, ok := botIndexMap[q.QQ]
 		if !ok {
@@ -84,10 +83,11 @@ func (q *QQInfo) Login() bool {
 			botData.Auto = "X"
 		}
 		botData.Note = "登录中"
-		TempBotData = append(TempBotData, botData)
+		if !ok {
+			TempBotData = append(TempBotData, botData)
+		}
 		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 		botLock.Unlock()
-
 		if err == nil {
 			TempBotData[index].NickName = botClient.Nickname
 			TempBotData[index].Status = "在线"
