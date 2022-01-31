@@ -4,10 +4,8 @@ import (
 	"MiraiGo-VclBot/device"
 	"MiraiGo-VclBot/util"
 	"encoding/json"
-	"fmt"
 	"github.com/Mrs4s/MiraiGo/client"
 	log "github.com/sirupsen/logrus"
-	"github.com/ying32/govcl/vcl"
 	"strconv"
 	"time"
 )
@@ -55,19 +53,8 @@ func (q *QQInfo) Login() bool {
 		botLock.Lock()
 		index := GetBotIndex(q.QQ)
 		var botData TTempItem
-		botData.IconIndex = int32(len(TempBotData))
-		avatarUrl := AvatarUrlPre + strconv.FormatInt(q.QQ, 10)
-		bytes, err2 := util.GetBytes(avatarUrl)
-		if err2 != nil {
-			fmt.Println(err2)
-		} else {
-			pic := vcl.NewPicture()
-			pic.LoadFromBytes(bytes)
-			BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
-			pic.Free()
-			SetBotAvatarIndex(q.QQ, int32(len(TempBotData)))
-		}
-		BotForm.BotListView.SetStateImages(BotForm.Icons)
+		botData.IconIndex = index
+		SetBotAvatar(q.QQ, index)
 		botData.QQ = strconv.FormatInt(q.QQ, 10)
 		botData.Protocol = GetProtocol(q.ClientProtocol)
 		botData.Status = "登录中"

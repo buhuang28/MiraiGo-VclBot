@@ -15,7 +15,6 @@ var (
 	Clients      ClientMap
 	LoginTokens  TokenMap
 	AvatarUrlPre = "http://q2.qlogo.cn/headimg_dl?spec=640&dst_uin="
-	AvatarPath   = "C://data//"
 )
 
 func InitLog(cli *client.QQClient) {

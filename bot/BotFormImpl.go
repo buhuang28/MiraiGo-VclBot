@@ -97,11 +97,6 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				botLock.Lock()
 				index := GetBotIndex(qrCodeBot.Uin)
 
-				//index, ok := botIndexMap[qrCodeBot.Uin]
-				//if !ok {
-				//	index = len(botIndexMap) - 1
-				//}
-				//botIndexMap[qrCodeBot.Uin] = index
 				var botData TTempItem
 				botData.IconIndex = index
 				botData.NickName = qrCodeBot.Nickname
@@ -114,16 +109,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				} else {
 					botData.Auto = "X"
 				}
-				avatarUrl := AvatarUrlPre + strconv.FormatInt(qrCodeBot.Uin, 10)
-				bytes, err := util.GetBytes(avatarUrl)
-				if err == nil {
-					pic := vcl.NewPicture()
-					pic.LoadFromBytes(bytes)
-					BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
-					pic.Free()
-					BotForm.BotListView.SetStateImages(BotForm.Icons)
-					SetBotAvatarIndex(qrCodeBot.Uin, index)
-				}
+				SetBotAvatar(qrCodeBot.Uin, index)
 				TempBotLock.Lock()
 				TempBotData = append(TempBotData, botData)
 				TempBotLock.Unlock()
@@ -213,6 +199,31 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		}()
 	})
 
+	item6 := vcl.NewMenuItem(f.BotListView)
+	item6.SetCaption("自动登录/取消自动登录")
+	item6.SetOnClick(func(sender vcl.IObject) {
+		go func() {
+			sel := vcl.AsListView(BotForm.BotListView).Selected()
+			if sel.IsValid() {
+				selectQQStr := TempBotData[sel.Index()].QQ
+				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+				var qqInfo QQInfo
+				fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
+				_ = json.Unmarshal(fileByte, &qqInfo)
+				qqInfo.AutoLogin = !qqInfo.AutoLogin
+				marshal, _ := json.Marshal(qqInfo)
+				util.WriteFile(QQINFOPATH+selectQQStr+QQINFOSKIN, marshal)
+				f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+				index := GetBotIndex(selectQQInt)
+				if qqInfo.AutoLogin {
+					TempBotData[index].Auto = "√"
+				} else {
+					TempBotData[index].Auto = "X"
+				}
+			}
+		}()
+	})
+
 	item7 := vcl.NewMenuItem(f.BotListView)
 	item7.SetCaption("删除")
 	item7.SetOnClick(func(sender vcl.IObject) {
@@ -237,6 +248,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	f.SelectedMenu = vcl.NewPopupMenu(f.BotListView)
 	f.SelectedMenu.Items().Add(item4)
 	f.SelectedMenu.Items().Add(item5)
+	f.SelectedMenu.Items().Add(item6)
 	f.SelectedMenu.Items().Add(item7)
 
 	f.BotListView.SetOnMouseDown(func(sender vcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
@@ -280,6 +292,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				var hw int32 = 20
 				botId, _ := strconv.ParseInt(data.QQ, 10, 64)
 				f.Icons.GetIcon(BotAvatarMap[botId], f.TempIco)
+				fmt.Println(botId, botId, "对应索引:", BotAvatarMap[botId])
 				if !f.TempIco.Empty() {
 					canvas.Draw(r.Right/2-hw/2, r.Top+(r.Bottom-r.Top-hw)/2, f.TempIco)
 				}
@@ -299,30 +312,12 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		}
 	})
 
-	//f.BotListView.SetOnClick(func(sender vcl.IObject) {
-	//	if len(TempBotData) == 5 {
-	//		return
-	//	}
-	//	var t TTempItem
-	//	t.Status = "123"
-	//	t.QQ = "123"
-	//	t.Protocol = "123"
-	//	t.Note = "2135"
-	//	t.NickName = "5412"
-	//	TempBotData = append(TempBotData, t)
-	//	BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-	//})
 }
 
 func (f *TBotForm) GetSubItemRect(hwndLV types.HWND, iItem, iSubItem int32) (ret types.TRect) {
 	win.ListView_GetSubItemRect(hwndLV, iItem, iSubItem, win.LVIR_LABEL, &ret)
 	return
 }
-
-//
-//func (f *TBotForm) OnBotListViewAdvancedCustomDrawSubItem(sender *vcl.TListView, item *vcl.TListItem, subItem int32, state types.TCustomDrawState, stage types.TCustomDrawStage, defaultDraw *bool)  {
-//
-//}
 
 func (f *TBotForm) OnFormDestroy(sender vcl.IObject) {
 	if f.TempIco != nil {
@@ -334,5 +329,29 @@ func SetBotAvatarIndex(botId int64, index int32) {
 	_, avatarOk := BotAvatarMap[botId]
 	if !avatarOk && botId != 0 {
 		BotAvatarMap[botId] = index
+		fmt.Println("设置:", botId, "索引:", index)
+	}
+}
+
+func SetBotAvatar(botId int64, index int32) {
+	if botId == 0 {
+		return
+	}
+	_, avatarOk := BotAvatarMap[botId]
+	if avatarOk && botId != 0 {
+		return
+	}
+	avatarUrl := AvatarUrlPre + strconv.FormatInt(botId, 10)
+	bytes, err := util.GetBytes(avatarUrl)
+	util.WriteFile(strconv.FormatInt(botId, 10)+".png", bytes)
+	if err == nil {
+		vcl.ThreadSync(func() {
+			pic := vcl.NewPicture()
+			pic.LoadFromBytes(bytes)
+			BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
+			pic.Free()
+			BotForm.BotListView.SetStateImages(BotForm.Icons)
+			SetBotAvatarIndex(botId, index)
+		})
 	}
 }

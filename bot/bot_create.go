@@ -7,14 +7,11 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client"
 	log "github.com/sirupsen/logrus"
-	"github.com/ying32/govcl/vcl"
 	"strconv"
 	"sync"
 )
 
 var (
-	//botIndexMap       = make(map[int64]int)
-	//botIndexStart int = 0
 	botLock sync.Mutex
 )
 
@@ -45,18 +42,7 @@ func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, cli
 		index = int32(len(TempBotData))
 	}
 	botData.IconIndex = index
-	avatarUrl := AvatarUrlPre + strconv.FormatInt(cli.Uin, 10)
-	bytes, err2 := util.GetBytes(avatarUrl)
-	if err2 != nil {
-		fmt.Println(err2)
-	} else {
-		pic := vcl.NewPicture()
-		pic.LoadFromBytes(bytes)
-		BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
-		pic.Free()
-		SetBotAvatarIndex(cli.Uin, index)
-	}
-	BotForm.BotListView.SetStateImages(BotForm.Icons)
+	SetBotAvatar(cli.Uin, index)
 	botData.QQ = strconv.FormatInt(cli.Uin, 10)
 	botData.Protocol = GetProtocol(clientProtocol)
 	botData.Status = "登录中"
