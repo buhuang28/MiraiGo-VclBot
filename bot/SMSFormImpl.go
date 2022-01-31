@@ -57,7 +57,7 @@ func (f *TSMSForm) OnFormCreate(sender vcl.IObject) {
 		TempCaptchaQQ = 0
 		f.SMSLabel.SetCaption("")
 		f.SMSCode.Clear()
-		index := botIndexMap[TempCaptchaQQ]
+		index := GetBotIndex(TempCaptchaQQ)
 		if err != nil || !rsp.Success {
 			TempBotData[index].Status = "离线"
 			TempBotData[index].Note = "登录失败"

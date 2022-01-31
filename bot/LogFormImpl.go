@@ -25,12 +25,11 @@ func (f *TLogForm) OnFormCreate(sender vcl.IObject) {
 	f.LogListView.SetHeight(370)
 	f.LogListView.SetLeft(0)
 	f.LogListView.SetTop(0)
-	f.LogListView.SetParent(f)
-	f.LogListView.SetViewStyle(types.VsReport)
-	f.LogListView.SetOwnerData(true)
-	f.LogListView.SetGridLines(true)
-	f.LogListView.SetReadOnly(true)
 	f.LogListView.SetRowSelect(true)
+	f.LogListView.SetReadOnly(true)
+	f.LogListView.SetViewStyle(types.VsReport)
+	f.LogListView.SetGridLines(true)
+
 	addCol := func(name string, width int32) {
 		col := f.LogListView.Columns().Add()
 		col.SetCaption(name)
@@ -43,41 +42,12 @@ func (f *TLogForm) OnFormCreate(sender vcl.IObject) {
 	addCol("消息内容", 380)
 
 	f.LogListView.SetOnAdvancedCustomDrawItem(func(sender *vcl.TListView, item *vcl.TListItem, state types.TCustomDrawState, Stage types.TCustomDrawStage, defaultDraw *bool) {
-		if len(LogItems) == 0 {
-			return
-		}
 		canvas := sender.Canvas()
-		boundRect := item.DisplayRect(types.DrBounds)
-		//当前状态，鼠标选中的那行显示的颜色
-		if state.In(types.CdsFocused) {
-			canvas.Brush().SetColor(colors.ClAqua)
-		} else {
-			canvas.Brush().SetColor(sender.Color())
-		}
-
-		canvas.FillRect(boundRect)
-		data := LogItems[item.Index()]
-		drawFlags := types.NewSet(types.TfCenter, types.TfSingleLine, types.TfVerticalCenter)
-		var i int32
 		font := canvas.Font()
-		switch data.MessageType {
-		case "接收":
-			font.SetColor(colors.ClBlue)
-		case "发送":
+		if item.SubItems().Strings(0) == "发送" {
 			font.SetColor(colors.ClGreen)
-		}
-		for i = 0; i < sender.Columns().Count(); i++ {
-			r := f.GetSubItemRect(sender.Handle(), item.Index(), i)
-			switch i {
-			case 0:
-				canvas.TextRect2(&r, data.BotId, drawFlags)
-			case 1:
-				canvas.TextRect2(&r, data.MessageType, drawFlags)
-			case 2:
-				canvas.TextRect2(&r, data.MessageTime, drawFlags)
-			case 3:
-				canvas.TextRect2(&r, data.Message, drawFlags)
-			}
+		} else {
+			font.SetColor(colors.ClBlue)
 		}
 	})
 
@@ -87,7 +57,6 @@ func (f *TLogForm) OnFormCreate(sender vcl.IObject) {
 	f.ClearText.SetLeft(20)
 	f.ClearText.SetCaption("清除日志")
 	f.ClearText.SetOnClick(func(sender vcl.IObject) {
-		LogItems = LogItems[:0]
 		LogForm.LogListView.Clear()
 	})
 
@@ -103,17 +72,9 @@ func (f *TLogForm) GetSubItemRect(hwndLV types.HWND, iItem, iSubItem int32) (ret
 	return
 }
 
-func AddLogItem(botId, groupId, userId int64, acceptOrSend, messageType int32, message string) {
-	var logItem LogItem
-	switch acceptOrSend {
-	case ACCEPT:
-		logItem.MessageType = "接收"
-	case SEND:
-		logItem.MessageType = "发送"
-	}
-	logItem.BotId = strconv.FormatInt(botId, 10)
-	logItem.MessageTime = time.Now().Format("15:04:05")
-
+func AddLogItem(botId, groupId, userId int64, acceptOrSend string, messageType int32, message string) {
+	botIdStr := strconv.FormatInt(botId, 10)
+	messageTimeStr := time.Now().Format("15:04:05")
 	logMessage := ""
 	switch messageType {
 	case ACCEPT_PRIVATE:
@@ -139,8 +100,14 @@ func AddLogItem(botId, groupId, userId int64, acceptOrSend, messageType int32, m
 	case SEND_TEMP:
 		logMessage = fmt.Sprintf("群(%v) QQ(%v)临时会话:%v", groupId, userId, message)
 	}
-	logItem.Message = logMessage
-	LogItems = append(LogItems, logItem)
-	itemIndex := int32(len(LogItems))
-	LogForm.LogListView.Items().SetCount(itemIndex)
+	vcl.ThreadSync(func() {
+		LogForm.LogListView.Items().BeginUpdate()
+		item := LogForm.LogListView.Items().Add()
+		item.SetCaption(botIdStr)
+		subItem := item.SubItems()
+		subItem.Add(acceptOrSend)
+		subItem.Add(messageTimeStr)
+		subItem.Add(logMessage)
+		LogForm.LogListView.Items().EndUpdate()
+	})
 }

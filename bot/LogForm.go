@@ -3,8 +3,7 @@ package bot
 import "github.com/ying32/govcl/vcl"
 
 var (
-	LogForm  *TLogForm
-	LogItems []LogItem
+	LogForm *TLogForm
 )
 
 type LogItem struct {

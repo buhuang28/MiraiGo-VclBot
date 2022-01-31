@@ -76,7 +76,8 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 			f.Hide()
 			f.Ticket.Clear()
 			f.VerifyQRCode.Hide()
-			index := botIndexMap[TempCaptchaQQ]
+			//index := botIndexMap[TempCaptchaQQ]
+			index := GetBotIndex(TempCaptchaQQ)
 			if err != nil || !rsp.Success {
 				TempBotData[index].Status = "离线"
 				TempBotData[index].Note = "登录失败"

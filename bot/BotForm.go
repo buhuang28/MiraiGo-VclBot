@@ -1,10 +1,16 @@
 package bot
 
-import "github.com/ying32/govcl/vcl"
+import (
+	"github.com/ying32/govcl/vcl"
+	"sync"
+)
 
 var (
 	BotForm     *TBotForm
 	TempBotData []TTempItem
+	//QQ--头像索引
+	BotAvatarMap = make(map[int64]int32)
+	TempBotLock  sync.Mutex
 )
 
 type TTempItem struct {

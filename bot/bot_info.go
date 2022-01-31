@@ -47,21 +47,15 @@ func (q *QQInfo) StoreLoginInfo(qq int64, pw [16]byte, token []byte, clientProto
 
 func (q *QQInfo) Login() bool {
 	log.Info("开始登录", q.QQ)
-
 	if q.Token != nil {
 		var botClient = client.NewClientEmpty()
 		deviceInfo := device.GetDevice(q.QQ, q.ClientProtocol)
 		botClient.UseDevice(deviceInfo)
 		err := botClient.TokenLogin(q.Token)
 		botLock.Lock()
-		index, ok := botIndexMap[q.QQ]
-		if !ok {
-			index = botIndexStart
-			botIndexStart++
-		}
-		botIndexMap[q.QQ] = index
+		index := GetBotIndex(q.QQ)
 		var botData TTempItem
-		botData.IconIndex = int32(index)
+		botData.IconIndex = int32(len(TempBotData))
 		avatarUrl := AvatarUrlPre + strconv.FormatInt(q.QQ, 10)
 		bytes, err2 := util.GetBytes(avatarUrl)
 		if err2 != nil {
@@ -71,6 +65,7 @@ func (q *QQInfo) Login() bool {
 			pic.LoadFromBytes(bytes)
 			BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
 			pic.Free()
+			SetBotAvatarIndex(q.QQ, int32(len(TempBotData)))
 		}
 		BotForm.BotListView.SetStateImages(BotForm.Icons)
 		botData.QQ = strconv.FormatInt(q.QQ, 10)
@@ -83,8 +78,10 @@ func (q *QQInfo) Login() bool {
 			botData.Auto = "X"
 		}
 		botData.Note = "登录中"
-		if !ok {
+		if index == -1 {
+			TempBotLock.Lock()
 			TempBotData = append(TempBotData, botData)
+			TempBotLock.Unlock()
 		}
 		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 		botLock.Unlock()
@@ -111,4 +108,14 @@ func (q *QQInfo) Login() bool {
 		}
 	}
 	return false
+}
+
+func GetBotIndex(botId int64) int32 {
+	botIdStr := strconv.FormatInt(botId, 10)
+	for k, v := range TempBotData {
+		if v.QQ == botIdStr {
+			return int32(k)
+		}
+	}
+	return -1
 }

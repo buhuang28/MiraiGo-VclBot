@@ -22,7 +22,7 @@ type TForm1Fields struct {
 }
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
-	f.SetCaption("机器人列表 -- 测试版   不慌")
+	f.SetCaption("机器人列表")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(400)
 	f.SetWidth(700)
@@ -95,14 +95,15 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 					originCli.Release()
 				}
 				botLock.Lock()
-				index, ok := botIndexMap[qrCodeBot.Uin]
-				if !ok {
-					index = botIndexStart
-					botIndexStart++
-				}
-				botIndexMap[qrCodeBot.Uin] = index
+				index := GetBotIndex(qrCodeBot.Uin)
+
+				//index, ok := botIndexMap[qrCodeBot.Uin]
+				//if !ok {
+				//	index = len(botIndexMap) - 1
+				//}
+				//botIndexMap[qrCodeBot.Uin] = index
 				var botData TTempItem
-				botData.IconIndex = int32(index)
+				botData.IconIndex = index
 				botData.NickName = qrCodeBot.Nickname
 				botData.QQ = strconv.FormatInt(qrCodeBot.Uin, 10)
 				botData.Protocol = QRCodeLoginForm.ProtocolCheck.Text()
@@ -121,8 +122,11 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 					BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
 					pic.Free()
 					BotForm.BotListView.SetStateImages(BotForm.Icons)
+					SetBotAvatarIndex(qrCodeBot.Uin, index)
 				}
+				TempBotLock.Lock()
 				TempBotData = append(TempBotData, botData)
+				TempBotLock.Unlock()
 				BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 
 				var qqInfo QQInfo
@@ -202,9 +206,9 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				cli, ok := Clients.Load(selectQQInt)
 				if ok {
 					cli.Disconnect()
-					TempBotData[sel.Index()].Status = "离线"
-					TempBotData[sel.Index()].Note = "离线"
 				}
+				TempBotData[sel.Index()].Status = "离线"
+				TempBotData[sel.Index()].Note = "离线"
 			}
 		}()
 	})
@@ -218,13 +222,14 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				selectQQStr := TempBotData[sel.Index()].QQ
 				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
 				cli, ok := Clients.Load(selectQQInt)
-				if ok {
+				if ok && cli.Online.Load() {
 					cli.Disconnect()
-					TempBotData[sel.Index()].Status = "离线"
-					TempBotData[sel.Index()].Note = "离线"
+					BuhuangBotOffline(selectQQInt)
 				}
 				util.DelFile(QQINFOPATH + selectQQStr + QQINFOSKIN)
+				TempBotLock.Lock()
 				TempBotData = append(TempBotData[:sel.Index()], TempBotData[sel.Index()+1:]...)
+				TempBotLock.Unlock()
 				f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 			}
 		}()
@@ -232,7 +237,6 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	f.SelectedMenu = vcl.NewPopupMenu(f.BotListView)
 	f.SelectedMenu.Items().Add(item4)
 	f.SelectedMenu.Items().Add(item5)
-	//f.SelectedMenu.Items().Add(item6)
 	f.SelectedMenu.Items().Add(item7)
 
 	f.BotListView.SetOnMouseDown(func(sender vcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
@@ -274,7 +278,8 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			switch i {
 			case 0:
 				var hw int32 = 20
-				f.Icons.GetIcon(data.IconIndex, f.TempIco)
+				botId, _ := strconv.ParseInt(data.QQ, 10, 64)
+				f.Icons.GetIcon(BotAvatarMap[botId], f.TempIco)
 				if !f.TempIco.Empty() {
 					canvas.Draw(r.Right/2-hw/2, r.Top+(r.Bottom-r.Top-hw)/2, f.TempIco)
 				}
@@ -322,5 +327,12 @@ func (f *TBotForm) GetSubItemRect(hwndLV types.HWND, iItem, iSubItem int32) (ret
 func (f *TBotForm) OnFormDestroy(sender vcl.IObject) {
 	if f.TempIco != nil {
 		f.TempIco.Free()
+	}
+}
+
+func SetBotAvatarIndex(botId int64, index int32) {
+	_, avatarOk := BotAvatarMap[botId]
+	if !avatarOk && botId != 0 {
+		BotAvatarMap[botId] = index
 	}
 }

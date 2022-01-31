@@ -58,7 +58,8 @@ func (f *TCaptchaForm) OnFormCreate(sender vcl.IObject) {
 		f.Captcha.Hide()
 		f.Code.Clear()
 		TempCaptchaQQ = 0
-		index := botIndexMap[TempCaptchaQQ]
+		//index := botIndexMap[TempCaptchaQQ]
+		index := GetBotIndex(TempCaptchaQQ)
 		if err != nil || !rsp.Success {
 			TempBotData[index].Status = "离线"
 			TempBotData[index].Note = "登录失败"

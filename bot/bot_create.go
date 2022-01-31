@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	botIndexMap       = make(map[int64]int)
-	botIndexStart int = 0
-	botLock       sync.Mutex
+	//botIndexMap       = make(map[int64]int)
+	//botIndexStart int = 0
+	botLock sync.Mutex
 )
 
 func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, clientProtocol int32, autoLogin bool) bool {
@@ -39,14 +39,12 @@ func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, cli
 	InitLog(cli)
 
 	botLock.Lock()
-	index, ok := botIndexMap[cli.Uin]
-	if !ok {
-		index = botIndexStart
-		botIndexStart++
-	}
-	botIndexMap[cli.Uin] = index
+	index := GetBotIndex(cli.Uin)
 	var botData TTempItem
-	botData.IconIndex = int32(index)
+	if index == -1 {
+		index = int32(len(TempBotData))
+	}
+	botData.IconIndex = index
 	avatarUrl := AvatarUrlPre + strconv.FormatInt(cli.Uin, 10)
 	bytes, err2 := util.GetBytes(avatarUrl)
 	if err2 != nil {
@@ -56,6 +54,7 @@ func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, cli
 		pic.LoadFromBytes(bytes)
 		BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
 		pic.Free()
+		SetBotAvatarIndex(cli.Uin, index)
 	}
 	BotForm.BotListView.SetStateImages(BotForm.Icons)
 	botData.QQ = strconv.FormatInt(cli.Uin, 10)
@@ -68,7 +67,9 @@ func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, cli
 		botData.Auto = "X"
 	}
 	botData.Note = "登录中"
+	TempBotLock.Lock()
 	TempBotData = append(TempBotData, botData)
+	TempBotLock.Unlock()
 	BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 	botLock.Unlock()
 
