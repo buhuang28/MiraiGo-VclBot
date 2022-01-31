@@ -22,7 +22,7 @@ type TForm1Fields struct {
 }
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
-	f.SetCaption("机器人列表")
+	f.SetCaption("机器人列表 --- 测试版")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(400)
 	f.SetWidth(700)
@@ -292,7 +292,6 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				var hw int32 = 20
 				botId, _ := strconv.ParseInt(data.QQ, 10, 64)
 				f.Icons.GetIcon(BotAvatarMap[botId], f.TempIco)
-				fmt.Println(botId, botId, "对应索引:", BotAvatarMap[botId])
 				if !f.TempIco.Empty() {
 					canvas.Draw(r.Right/2-hw/2, r.Top+(r.Bottom-r.Top-hw)/2, f.TempIco)
 				}
@@ -329,7 +328,6 @@ func SetBotAvatarIndex(botId int64, index int32) {
 	_, avatarOk := BotAvatarMap[botId]
 	if !avatarOk && botId != 0 {
 		BotAvatarMap[botId] = index
-		fmt.Println("设置:", botId, "索引:", index)
 	}
 }
 

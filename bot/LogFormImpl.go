@@ -109,5 +109,8 @@ func AddLogItem(botId, groupId, userId int64, acceptOrSend string, messageType i
 		subItem.Add(messageTimeStr)
 		subItem.Add(logMessage)
 		LogForm.LogListView.Items().EndUpdate()
+		if LogForm.RollCheck.Checked() {
+			item.MakeVisible(true)
+		}
 	})
 }
