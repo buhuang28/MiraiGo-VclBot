@@ -22,6 +22,7 @@ func (l *LruCache) Add(key lru.Key, value interface{}) {
 	l.Cache.Add(key, value)
 	l.Unlock()
 }
+
 func (l *LruCache) Get(key lru.Key) (value interface{}, ok bool) {
 	l.Lock()
 	value, ok = l.Cache.Get(key)

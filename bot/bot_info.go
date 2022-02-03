@@ -66,9 +66,10 @@ func (q *QQInfo) Login() bool {
 		}
 		botData.Note = "登录中"
 		if index == -1 {
-			TempBotLock.Lock()
-			TempBotData = append(TempBotData, botData)
-			TempBotLock.Unlock()
+			AddTempBotData(botData)
+			//TempBotLock.Lock()
+			//TempBotData = append(TempBotData, botData)
+			//TempBotLock.Unlock()
 		}
 		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 		botLock.Unlock()

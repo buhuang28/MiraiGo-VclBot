@@ -16,11 +16,8 @@ import (
 var (
 	WsCon       *websocket.Conn
 	WsConSucess bool = false
-	//WSWLock        sync.Mutex
-	//WSRLock        sync.Mutex
-	WSCallLock sync.Mutex
-	//WSClientHeader http.Header = make(map[string][]string)
-	BotLock sync.Mutex
+	WSCallLock  sync.Mutex
+	BotLock     sync.Mutex
 )
 
 const (

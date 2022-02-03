@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func AutoLogin() {
@@ -36,12 +37,13 @@ func AutoLogin() {
 				botData.Auto = "X"
 			}
 			botData.Note = "离线"
-			TempBotData = append(TempBotData, botData)
+			//TempBotData = append(TempBotData, botData)
+			AddTempBotData(botData)
 			BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 			botLock.Unlock()
 			if qqInfo.AutoLogin {
 				qqInfo.Login()
-				//time.Sleep(time.Second * 2)
+				time.Sleep(time.Second * 2)
 			}
 		}
 	}

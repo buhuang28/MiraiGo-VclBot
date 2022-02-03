@@ -110,9 +110,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 					botData.Auto = "X"
 				}
 				SetBotAvatar(qrCodeBot.Uin, index)
-				TempBotLock.Lock()
-				TempBotData = append(TempBotData, botData)
-				TempBotLock.Unlock()
+				AddTempBotData(botData)
 				BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 
 				var qqInfo QQInfo

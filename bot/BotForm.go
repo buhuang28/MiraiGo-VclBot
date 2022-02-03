@@ -2,6 +2,7 @@ package bot
 
 import (
 	"github.com/ying32/govcl/vcl"
+	"strconv"
 	"sync"
 )
 
@@ -32,4 +33,15 @@ type TBotForm struct {
 	SelectedMenu *vcl.TPopupMenu
 	Avatar       []*vcl.TPngImage
 	TForm1Fields
+}
+
+func AddTempBotData(data TTempItem) {
+	TempBotLock.Lock()
+	TempBotLock.Unlock()
+	i, _ := strconv.ParseInt(data.QQ, 10, 64)
+	index := GetBotIndex(i)
+	if index != -1 {
+		return
+	}
+	TempBotData = append(TempBotData, data)
 }
