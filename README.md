@@ -1,6 +1,9 @@
 # MiraiGo-VclBot
 基于MiraiGo做出来的多Q机器人......框架？
+
 开发文档？开发文档还在鸽，咕咕咕。
+Event事件文档自己开个websocket-server试试，目前咕了，下次一定补上。
+Api文档目前也咕了大部分，就写了一小部分Api，下次一定补上
 
 
 ## API
