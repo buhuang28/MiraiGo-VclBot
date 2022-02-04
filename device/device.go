@@ -157,6 +157,9 @@ func GetDevice(seed int64, clientProtocol int32) *client.DeviceInfo {
 
 	if clientProtocol > 0 && clientProtocol < 6 {
 		deviceInfo.Protocol = client.ClientProtocol(clientProtocol)
+	} else {
+		//5代表ipad
+		deviceInfo.Protocol = client.ClientProtocol(5)
 	}
 
 	GenNewGuid(deviceInfo)

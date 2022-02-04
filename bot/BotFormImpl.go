@@ -22,7 +22,7 @@ type TForm1Fields struct {
 }
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
-	f.SetCaption("机器人列表 --- 测试版")
+	f.SetCaption("机器人列表")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(400)
 	f.SetWidth(700)

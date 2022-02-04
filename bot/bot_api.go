@@ -174,10 +174,9 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 	if ret.Id == -1 {
 		ret = cli.SendGroupMessage(groupId, sendingMessage, false)
 		log.Info(cli.Uin, "消息第二次重发返回id:", ret.Id)
-	}
-	if ret.Id == -1 {
-		ret = cli.SendGroupMessage(groupId, sendingMessage, false)
-		log.Info(cli.Uin, "消息第三次重发返回id:", ret.Id)
+		msg := MiraiMsgToRawMsg(cli, miraiMsg)
+		handleErrorMsg(cli.Uin, groupId, msgId, msg)
+		return -1
 	}
 	if ret.Id != -1 {
 		GroupMsgRecordLock.Lock()

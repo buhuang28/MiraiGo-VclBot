@@ -65,4 +65,6 @@ const (
 	GMC_MEMBER_LEAVE = 14
 	//群文件
 	GMC_GROUP_FILE = 15
+	//风控消息
+	ERROR_MSG = 16
 )

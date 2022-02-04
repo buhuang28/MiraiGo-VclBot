@@ -309,3 +309,25 @@ func handleGroupInvitedRequest(cli *client.QQClient, event *client.GroupInvitedR
 		}
 	}()
 }
+
+//发送失败的消息返回给server
+func handleErrorMsg(botId int64, groupID, msgId int64, msg string) {
+	go func() {
+		defer func() {
+			e := recover()
+			if e != nil {
+				util.PrintStackTrace(e)
+			}
+			//bot.WSWLock.Unlock()
+		}()
+		AddLogItem(botId, groupID, 0, SEND, SEND_GROUP, "风控消息:"+msg)
+	}()
+	var data ws_data.GMCWSData
+	data.MsgType = ws_data.ERROR_MSG
+	data.BotId = botId
+	data.GroupId = groupID
+	data.MessageId = msgId
+	data.Message = msg
+	marshal, _ := json.Marshal(data)
+	WsCon.Write(marshal)
+}
