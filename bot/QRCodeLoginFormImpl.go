@@ -37,6 +37,7 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.ProtocolCheck.Items().Add(AndroidPhone)
 	f.ProtocolCheck.Items().Add(AndroidWatch)
 	f.ProtocolCheck.Items().Add(MacOS)
+	f.ProtocolCheck.Items().Add(QiDian)
 	f.ProtocolCheck.SetLeft(160)
 	f.ProtocolCheck.SetTop(30)
 	f.ProtocolCheck.SetItemIndex(0)

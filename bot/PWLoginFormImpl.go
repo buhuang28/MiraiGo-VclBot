@@ -54,6 +54,7 @@ func (f *TPWLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.ProtocolCheck.Items().Add(AndroidPhone)
 	f.ProtocolCheck.Items().Add(AndroidWatch)
 	f.ProtocolCheck.Items().Add(MacOS)
+	f.ProtocolCheck.Items().Add(QiDian)
 	f.ProtocolCheck.SetItemIndex(0)
 	f.ProtocolCheck.SetWidth(85)
 
