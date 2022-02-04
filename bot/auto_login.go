@@ -23,7 +23,6 @@ func AutoLogin() {
 				fmt.Println("反序列化失败:", err)
 				continue
 			}
-			botLock.Lock()
 			var botData TTempItem
 			botData.IconIndex = int32(len(TempBotData))
 			SetBotAvatar(qqInfo.QQ, int32(len(TempBotData)))
@@ -40,7 +39,6 @@ func AutoLogin() {
 			//TempBotData = append(TempBotData, botData)
 			AddTempBotData(botData)
 			BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-			botLock.Unlock()
 			if qqInfo.AutoLogin {
 				qqInfo.Login()
 				time.Sleep(time.Second * 2)

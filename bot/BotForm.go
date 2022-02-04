@@ -37,7 +37,7 @@ type TBotForm struct {
 
 func AddTempBotData(data TTempItem) {
 	TempBotLock.Lock()
-	TempBotLock.Unlock()
+	defer TempBotLock.Unlock()
 	i, _ := strconv.ParseInt(data.QQ, 10, 64)
 	index := GetBotIndex(i)
 	if index != -1 {

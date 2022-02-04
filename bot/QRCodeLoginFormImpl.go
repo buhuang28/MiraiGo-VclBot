@@ -68,7 +68,6 @@ func GetQRCodeUrl(clientProtocol int32) []byte {
 		log.Info("获取二维码失败:", err)
 		return nil
 	}
-
 	//QRCodeLoginForm.Image.Picture().LoadFromBytes(fetchQRCodeResp.ImageData)
 	tempLoginSig = fetchQRCodeResp.Sig
 	return fetchQRCodeResp.ImageData

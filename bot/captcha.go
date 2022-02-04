@@ -27,7 +27,6 @@ var (
 
 func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 	if rsp.Success {
-		//index := botIndexMap[cli.Uin]
 		index := GetBotIndex(cli.Uin)
 		fmt.Println(index)
 		TempBotData[index].NickName = cli.Nickname
@@ -43,7 +42,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		return false
 	}
 	TempCaptchaQQ = cli.Uin
-	//log.Infof("验证码处理页面: http://localhost:%s/", config.Port)
 	switch rsp.Error {
 	case client.SliderNeededError:
 		log.Info("遇到滑块验证码")
@@ -59,8 +57,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		return false
 	case client.NeedCaptcha:
 		log.Info("遇到图形验证码")
-		//log.Infof("遇到图形验证码，根据README提示操作 https://github.com/protobufbot/Go-Mirai-Client (顺便star)")
-		//_ = ioutil.WriteFile(CaptchaPath, , 0644)
 		go func() {
 			TempCaptchSign = rsp.CaptchaSign
 			vcl.ThreadSync(func() {
@@ -69,7 +65,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 				CaptchaForm.Show()
 			})
 		}()
-
 		return false
 	case client.SMSNeededError:
 		log.Info("遇到短信验证码")
@@ -83,7 +78,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			return false
 		} else {
 			go func() {
-				//index := botIndexMap[cli.Uin]
 				index := GetBotIndex(cli.Uin)
 				TempBotData[index].Note = "手机号" + rsp.SMSPhone + "请求短信验证码错误，可能是太频繁"
 				vcl.ThreadSync(func() {
@@ -103,7 +97,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			})
 		}()
 		var i int32
-		//index := botIndexMap[TempCaptchaQQ]
 		index := GetBotIndex(TempCaptchaQQ)
 		for i = 0; i < 30; i++ {
 			cli.Disconnect()
