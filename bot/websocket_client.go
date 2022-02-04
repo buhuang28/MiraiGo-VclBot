@@ -124,7 +124,10 @@ func HandleWSMsg() {
 				BuHuangSendPrivateMsg(cli, miraiMsg, data.UserId, data.GroupId)
 			case ws_data.GMC_GROUP_MESSAGE:
 				AddLogItem(data.BotId, data.GroupId, data.UserId, SEND, SEND_GROUP, data.Message)
-				BuHuangSendGroupMsg(cli, miraiMsg, data.MessageId, data.GroupId)
+				rId := BuHuangSendGroupMsg(cli, miraiMsg, data.MessageId, data.GroupId)
+				if rId == -1 {
+					handleErrorMsg(data.BotId, data.GroupId, data.MessageId, data.Message)
+				}
 			case ws_data.GMC_WITHDRAW_MESSAGE:
 				BuBuhuangWithDrawMsg(cli, data.GroupId, data.MessageId, data.InternalId)
 			case ws_data.GMC_ALLGROUPMEMBER:

@@ -153,7 +153,6 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 			util.PrintStackTrace(e)
 		}
 	}()
-
 	if cli.FindGroup(groupId) == nil {
 		return 0
 	}
@@ -172,10 +171,6 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 		log.Info("发送成功使用时间:", nt2-nt)
 	}
 	if ret.Id == -1 {
-		ret = cli.SendGroupMessage(groupId, sendingMessage, false)
-		log.Info(cli.Uin, "消息第二次重发返回id:", ret.Id)
-		msg := MiraiMsgToRawMsg(cli, miraiMsg)
-		handleErrorMsg(cli.Uin, groupId, msgId, msg)
 		return -1
 	}
 	if ret.Id != -1 {
