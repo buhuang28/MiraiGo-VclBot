@@ -99,8 +99,6 @@ func (q *QQInfo) Login() bool {
 }
 
 func GetBotIndex(botId int64) int32 {
-	TempBotLock.Lock()
-	defer TempBotLock.Unlock()
 	botIdStr := strconv.FormatInt(botId, 10)
 	for k, v := range TempBotData {
 		if v.QQ == botIdStr {
