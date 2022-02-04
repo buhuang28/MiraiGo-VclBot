@@ -89,7 +89,6 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 				cli.Disconnect()
 				return
 			}
-
 			fmt.Println("提交滑块验证码")
 		}()
 	})
