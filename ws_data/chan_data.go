@@ -23,5 +23,3 @@ func HandleCallBackEvent(data GMCWSData) {
 	ch := ChanMap[data.RequestId]
 	ch <- data
 }
-
-//打印错误堆栈

@@ -141,10 +141,10 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		log.Errorf(rsp.ErrorMessage)
 		go func() {
 			vcl.ThreadSync(func() {
-				vcl.ShowMessage(rsp.ErrorMessage)
+				vcl.ShowMessage(strconv.FormatInt(cli.Uin, 10) + rsp.ErrorMessage)
 			})
 		}()
-		log.Info("遇到登录错误:", rsp.ErrorMessage)
+		log.Info(cli.Uin, "遇到登录错误:", rsp.ErrorMessage)
 		return false
 	}
 	log.Info("process login error")

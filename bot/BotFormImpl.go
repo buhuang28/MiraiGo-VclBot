@@ -339,7 +339,7 @@ func SetBotAvatar(botId int64, index int32) {
 	}
 	avatarUrl := AvatarUrlPre + strconv.FormatInt(botId, 10)
 	bytes, err := util.GetBytes(avatarUrl)
-	util.WriteFile(strconv.FormatInt(botId, 10)+".png", bytes)
+	//util.WriteFile(strconv.FormatInt(botId, 10)+".png", bytes)
 	if err == nil {
 		vcl.ThreadSync(func() {
 			pic := vcl.NewPicture()

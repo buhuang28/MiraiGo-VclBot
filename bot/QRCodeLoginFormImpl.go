@@ -23,7 +23,6 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.Image.SetLeft(10)
 	f.Image.SetHeight(180)
 	f.Image.SetWidth(180)
-	//f.Image.Picture().LoadFromFile("C:\\images\\2.png")
 	f.Image.Update()
 	f.Image.SetParent(f)
 	f.ProtocolText = vcl.NewLabel(f)
