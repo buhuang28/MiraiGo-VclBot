@@ -72,12 +72,16 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 			cli, _ := Clients.Load(TempCaptchaQQ)
 			ticket := strings.TrimSpace(f.Ticket.Text())
 			rsp, err := cli.SubmitTicket(ticket)
-			TempCaptchaQQ = 0
 			f.Hide()
 			f.Ticket.Clear()
 			f.VerifyQRCode.Hide()
-			//index := botIndexMap[TempCaptchaQQ]
 			index := GetBotIndex(TempCaptchaQQ)
+			TempCaptchaQQ = 0
+			if rsp.Success {
+				TempBotData[index].Status = "在线"
+				TempBotData[index].Note = "登录成功"
+				go AfterLogin(cli, -1)
+			}
 			if err != nil || !rsp.Success {
 				TempBotData[index].Status = "离线"
 				TempBotData[index].Note = "登录失败"
@@ -85,11 +89,7 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 				cli.Disconnect()
 				return
 			}
-			if rsp.Success {
-				TempBotData[index].Status = "在线"
-				TempBotData[index].Note = "登录成功"
-				go AfterLogin(cli, -1)
-			}
+
 			fmt.Println("提交滑块验证码")
 		}()
 	})

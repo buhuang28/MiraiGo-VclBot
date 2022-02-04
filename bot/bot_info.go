@@ -46,7 +46,6 @@ func (q *QQInfo) StoreLoginInfo(qq int64, pw [16]byte, token []byte, clientProto
 
 func (q *QQInfo) Login() bool {
 	log.Info("开始登录", q.QQ)
-
 	if q.QQ != 0 && q.PassWord != [16]byte{} {
 		fmt.Println("开始密码登录")
 		success := CreateBotImplMd5(q.QQ, q.PassWord, q.QQ, q.ClientProtocol, q.AutoLogin)
