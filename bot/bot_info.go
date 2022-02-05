@@ -90,7 +90,7 @@ func (q *QQInfo) Login() bool {
 			InitLog(botClient)
 			log.Infof("初始化日志")
 			Clients.Store(q.QQ, botClient)
-			AfterLogin(botClient, q.ClientProtocol)
+			go AfterLogin(botClient, q.ClientProtocol)
 			return true
 		}
 	}

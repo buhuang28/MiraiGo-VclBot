@@ -164,9 +164,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			parseInt, _ := strconv.ParseInt(botStr, 10, 64)
 			cli, ok := Clients.Load(parseInt)
 			if ok {
-				vcl.ThreadSync(func() {
-					UpdateBotItem(parseInt, "", "离线", "", "", "离线")
-				})
+				UpdateBotItem(parseInt, "", "离线", "", "", "离线")
 				cli.Disconnect()
 			}
 			var qqInfo QQInfo
@@ -220,9 +218,9 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			cli, ok := Clients.Load(parseInt)
 			if ok {
 				cli.Disconnect()
+				BuhuangBotOffline(parseInt)
 			}
 			UpdateBotItem(parseInt, "", "离线", "", "", "离线")
-
 			//sel := vcl.AsListView(BotForm.BotListView).Selected()
 			//if sel.IsValid() {
 			//	selectQQStr := TempBotData[sel.Index()].QQ
@@ -302,8 +300,8 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				BuhuangBotOffline(parseInt)
 			}
 			index := GetBotIndex(parseInt)
-			DeleteBotItem(parseInt)
 			TempBotLock.Lock()
+			DeleteBotItem(parseInt)
 			TempBotData = append(TempBotData[:index], TempBotData[index+1:]...)
 			TempBotLock.Unlock()
 			f.BotListView.Items().SetCount(int32(len(TempBotData)))
@@ -425,68 +423,81 @@ func SetBotAvatar(botId int64, index int32) {
 	avatarUrl := AvatarUrlPre + strconv.FormatInt(botId, 10)
 	bytes, err := util.GetBytes(avatarUrl)
 	if err == nil {
-		vcl.ThreadSync(func() {
-			pic := vcl.NewPicture()
-			pic.LoadFromBytes(bytes)
-			BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
-			pic.Free()
-			//BotForm.BotListView.SetStateImages(BotForm.Icons)
-			SetBotAvatarIndex(botId, index)
-		})
+		go func() {
+			vcl.ThreadSync(func() {
+				pic := vcl.NewPicture()
+				pic.LoadFromBytes(bytes)
+				BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
+				pic.Free()
+				SetBotAvatarIndex(botId, index)
+			})
+		}()
 	}
 }
 
 func UpdateBotItem(botId int64, nickName, status, protocol, Auto, note string) {
 	if botId == 0 {
-		vcl.ShowMessage("验证错误")
+		go func() {
+			vcl.ThreadSync(func() {
+				vcl.ShowMessage("验证错误")
+			})
+		}()
 		return
 	}
 	botIdStr := strconv.FormatInt(botId, 10)
 	index := GetBotIndex(botId)
 	if index == -1 {
-		vcl.ThreadSync(func() {
-			BotForm.BotListView.Items().BeginUpdate()
-			item := BotForm.BotListView.Items().Add()
-			item.SetCaption("")
-			subItems := item.SubItems()
-			subItems.Add(botIdStr)
-			subItems.Add(nickName)
-			subItems.Add(status)
-			subItems.Add(protocol)
-			subItems.Add(Auto)
-			subItems.Add(note)
-			BotForm.BotListView.Items().EndUpdate()
-		})
+		go func() {
+			vcl.ThreadSync(func() {
+				BotForm.BotListView.Items().BeginUpdate()
+				item := BotForm.BotListView.Items().Add()
+				item.SetCaption("")
+				subItems := item.SubItems()
+				subItems.Add(botIdStr)
+				subItems.Add(nickName)
+				subItems.Add(status)
+				subItems.Add(protocol)
+				subItems.Add(Auto)
+				subItems.Add(note)
+				BotForm.BotListView.Items().EndUpdate()
+			})
+		}()
 	} else {
-		vcl.ThreadSync(func() {
-			BotForm.BotListView.Items().BeginUpdate()
-			item := BotForm.BotListView.Items().Item(index).SubItems()
-			if nickName != "" {
-				TempBotData[index].NickName = nickName
-				item.SetStrings(1, nickName)
-			}
-			if status != "" {
-				TempBotData[index].Status = status
-				item.SetStrings(2, status)
-			}
-			if protocol != "" {
-				TempBotData[index].Protocol = protocol
-				item.SetStrings(3, protocol)
-			}
-			if Auto != "" {
-				TempBotData[index].Auto = Auto
-				item.SetStrings(4, Auto)
-			}
-			if note != "" {
-				TempBotData[index].Note = note
-				item.SetStrings(5, note)
-			}
-			BotForm.BotListView.Items().EndUpdate()
-		})
+		go func() {
+			vcl.ThreadSync(func() {
+				BotForm.BotListView.Items().BeginUpdate()
+				item := BotForm.BotListView.Items().Item(index).SubItems()
+				if nickName != "" {
+					TempBotData[index].NickName = nickName
+					item.SetStrings(1, nickName)
+				}
+				if status != "" {
+					TempBotData[index].Status = status
+					item.SetStrings(2, status)
+				}
+				if protocol != "" {
+					TempBotData[index].Protocol = protocol
+					item.SetStrings(3, protocol)
+				}
+				if Auto != "" {
+					TempBotData[index].Auto = Auto
+					item.SetStrings(4, Auto)
+				}
+				if note != "" {
+					TempBotData[index].Note = note
+					item.SetStrings(5, note)
+				}
+				BotForm.BotListView.Items().EndUpdate()
+			})
+		}()
 	}
 }
 
 func DeleteBotItem(botId int64) {
 	index := GetBotIndex(botId)
-	BotForm.BotListView.Items().Delete(index)
+	go func() {
+		vcl.ThreadSync(func() {
+			BotForm.BotListView.Items().Delete(index)
+		})
+	}()
 }
