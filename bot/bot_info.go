@@ -83,9 +83,10 @@ func (q *QQInfo) Login() bool {
 		}
 		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 		if err == nil {
-			TempBotData[index].NickName = botClient.Nickname
-			TempBotData[index].Status = "在线"
-			TempBotData[index].Note = "在线"
+			//TempBotData[index].NickName = botClient.Nickname
+			//TempBotData[index].Status = "在线"
+			//TempBotData[index].Note = "在线"
+			UpdateBotItem(q.QQ, botClient.Nickname, ONLINE, "", "", ONLINE)
 			InitLog(botClient)
 			log.Infof("初始化日志")
 			Clients.Store(q.QQ, botClient)

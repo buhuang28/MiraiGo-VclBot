@@ -11,9 +11,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/t-tomalak/logrus-easy-formatter v0.0.0-20190827215021-c074f06c5816
-	github.com/ying32/dylib v0.0.0-20210414124638-bf395b2d391a // indirect
-	github.com/ying32/govcl v2.0.10+incompatible
-	github.com/ying32/liblclbinres v0.0.0-20220111074620-df670ba4baf4 // indirect
+	github.com/ying32/govcl v2.2.0+incompatible
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 )
 
@@ -27,6 +25,8 @@ require (
 	github.com/tidwall/gjson v1.11.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/ying32/dylib v0.0.0-20210414124638-bf395b2d391a // indirect
+	github.com/ying32/liblclbinres v0.0.0-20220111074620-df670ba4baf4 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect

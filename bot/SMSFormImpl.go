@@ -56,18 +56,28 @@ func (f *TSMSForm) OnFormCreate(sender vcl.IObject) {
 		f.Hide()
 		f.SMSLabel.SetCaption("")
 		f.SMSCode.Clear()
-		index := GetBotIndex(TempCaptchaQQ)
-		TempCaptchaQQ = 0
+		defer func() {
+			TempCaptchaQQ = 0
+		}()
+		//index := GetBotIndex(TempCaptchaQQ)
+		//TempCaptchaQQ = 0
 		if err != nil || !rsp.Success {
-			TempBotData[index].Status = "离线"
-			TempBotData[index].Note = "登录失败"
+			UpdateBotItem(TempCaptchaQQ, "", OFFLINE, "", "", SMS_CAPTCHA_ERROR)
+			//TempBotData[index].Status = "离线"
+			//TempBotData[index].Note = "登录失败"
 			log.Info("短信验证码提交后出错:", err)
 			cli.Disconnect()
+			go func() {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage("短信验证码提交后出错" + err.Error())
+				})
+			}()
 			return
 		}
 		if rsp.Success {
-			TempBotData[index].Status = "在线"
-			TempBotData[index].Note = "登录成功"
+			//TempBotData[index].Status = "在线"
+			//TempBotData[index].Note = "登录成功"
+			UpdateBotItem(TempCaptchaQQ, "", ONLINE, "", "", LOGIN_SUCCESS)
 			go AfterLogin(cli, -1)
 		}
 	})

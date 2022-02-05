@@ -44,17 +44,16 @@ func CreateBotImplMd5(uin int64, passwordMd5 [16]byte, deviceRandSeed int64, cli
 	SetBotAvatar(cli.Uin, index)
 	botData.QQ = strconv.FormatInt(cli.Uin, 10)
 	botData.Protocol = GetProtocol(clientProtocol)
-	botData.Status = "登录中"
+	botData.Status = LOGIN
 	botData.NickName = ""
 	if autoLogin {
 		botData.Auto = "√"
 	} else {
 		botData.Auto = "X"
 	}
-	botData.Note = "登录中"
+	botData.Note = LOGIN
 	AddTempBotData(botData)
 	BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-
 	log.Info(uin, "密码登录中...")
 	Clients.Store(uin, cli)
 	ok, err := Login(cli)

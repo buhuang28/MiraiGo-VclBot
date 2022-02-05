@@ -27,18 +27,18 @@ var (
 
 func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 	if rsp.Success {
-		index := GetBotIndex(cli.Uin)
-		fmt.Println(index)
-		TempBotData[index].NickName = cli.Nickname
-		TempBotData[index].Status = "在线"
-		TempBotData[index].Note = "登录成功"
+		//index := GetBotIndex(cli.Uin)
+		//TempBotData[index].NickName = cli.Nickname
+		//TempBotData[index].Status = "在线"
+		//TempBotData[index].Note = "登录成功"
+		UpdateBotItem(cli.Uin, cli.Nickname, ONLINE, "", "", LOGIN_SUCCESS)
 		return true
 	}
 	if rsp.Error == client.SMSOrVerifyNeededError {
 		rsp.Error = client.SMSNeededError
 	}
 	if TempCaptchaQQ != 0 {
-		vcl.ShowMessage("还有正在处理登录验证的机器人:" + strconv.FormatInt(TempCaptchaQQ, 10))
+		vcl.ShowMessage("还有正在处理登录验证的机器人:" + strconv.FormatInt(TempCaptchaQQ, 10) + "错误问题:" + rsp.ErrorMessage)
 		return false
 	}
 	TempCaptchaQQ = cli.Uin
@@ -78,8 +78,9 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			return false
 		} else {
 			go func() {
-				index := GetBotIndex(cli.Uin)
-				TempBotData[index].Note = "手机号" + rsp.SMSPhone + "请求短信验证码错误，可能是太频繁"
+				//index := GetBotIndex(cli.Uin)
+				//TempBotData[index].Note = "手机号" + rsp.SMSPhone + "请求短信验证码错误，可能是太频繁"
+				UpdateBotItem(cli.Uin, "", "", "", "", "手机号"+rsp.SMSPhone+"请求短信验证码错误，可能是太频繁")
 				vcl.ThreadSync(func() {
 					vcl.ShowMessage("手机号" + rsp.SMSPhone + "请求短信验证码错误，可能是太频繁")
 				})
@@ -97,7 +98,7 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			})
 		}()
 		var i int32
-		index := GetBotIndex(TempCaptchaQQ)
+		//index := GetBotIndex(TempCaptchaQQ)
 		for i = 0; i < 30; i++ {
 			cli.Disconnect()
 			time.Sleep(5 * time.Second)
@@ -105,8 +106,9 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			if err != nil || !resp.Success {
 				continue
 			} else {
-				TempBotData[index].Status = "在线"
-				TempBotData[index].Note = "登录成功"
+				//TempBotData[index].Status = "在线"
+				//TempBotData[index].Note = "登录成功"
+				UpdateBotItem(TempCaptchaQQ, "", ONLINE, "", "", LOGIN_SUCCESS)
 				TempCaptchaQQ = 0
 				go func() {
 					vcl.ThreadSync(func() {
@@ -120,8 +122,9 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		}
 		TempCaptchaQQ = 0
 		go func() {
-			TempBotData[index].Status = "离线"
-			TempBotData[index].Note = "设备扫码验证失败，登录失败"
+			//TempBotData[index].Status = "离线"
+			//TempBotData[index].Note = "设备扫码验证失败，登录失败"
+			UpdateBotItem(TempCaptchaQQ, "", OFFLINE, "", "", QRCODE_CAPTCHA_ERROR)
 			vcl.ThreadSync(func() {
 				DeviceVerifyForm.QRCode.Hide()
 				DeviceVerifyForm.Hide()
@@ -134,7 +137,7 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		log.Errorf(rsp.ErrorMessage)
 		go func() {
 			vcl.ThreadSync(func() {
-				vcl.ShowMessage(strconv.FormatInt(cli.Uin, 10) + rsp.ErrorMessage)
+				vcl.ShowMessage(strconv.FormatInt(cli.Uin, 10) + "登录失败:" + rsp.ErrorMessage)
 			})
 		}()
 		log.Info(cli.Uin, "遇到登录错误:", rsp.ErrorMessage)

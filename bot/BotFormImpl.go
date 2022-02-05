@@ -41,9 +41,8 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	f.BotListView.SetParent(f)
 	f.BotListView.SetViewStyle(types.VsReport)
 	f.BotListView.SetReadOnly(true)
-	f.BotListView.SetOwnerData(true)
+	//f.BotListView.SetOwnerData(true)
 	f.BotListView.SetGridLines(true)
-	f.BotListView.SetReadOnly(true)
 	f.BotListView.SetRowSelect(true)
 	f.BotListView.SetSmallImages(f.Icons)
 
@@ -102,8 +101,8 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				botData.NickName = qrCodeBot.Nickname
 				botData.QQ = strconv.FormatInt(qrCodeBot.Uin, 10)
 				botData.Protocol = QRCodeLoginForm.ProtocolCheck.Text()
-				botData.Status = "在线"
-				botData.Note = "登录成功"
+				botData.Status = ONLINE
+				botData.Note = LOGIN_SUCCESS
 				if QRCodeLoginForm.AutoLogin.Checked() {
 					botData.Auto = "√"
 				} else {
@@ -111,7 +110,7 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				}
 				SetBotAvatar(qrCodeBot.Uin, index)
 				AddTempBotData(botData)
-				BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+				//BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 				var qqInfo QQInfo
 				qqInfo.StoreLoginInfo(qrCodeBot.Uin, [16]byte{}, qrCodeBot.GenToken(), int32(tempDeviceInfo.Protocol), QRCodeLoginForm.AutoLogin.Checked())
 				Clients.Store(qrCodeBot.Uin, qrCodeBot)
@@ -154,27 +153,54 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	item4.SetCaption("登录/重登")
 	item4.SetOnClick(func(sender vcl.IObject) {
 		go func() {
-			sel := vcl.AsListView(BotForm.BotListView).Selected()
-			if sel.IsValid() {
-				selectQQStr := TempBotData[sel.Index()].QQ
-				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-				cli, ok := Clients.Load(selectQQInt)
-				if ok {
-					cli.Disconnect()
-					TempBotData[sel.Index()].Status = "离线"
-					TempBotData[sel.Index()].Note = "离线"
-				}
-				var qqInfo QQInfo
-				fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
-				err := json.Unmarshal(fileByte, &qqInfo)
-				if err != nil {
-					vcl.ThreadSync(func() {
-						vcl.ShowMessage("反序列化失败，无法重新登录，请检测C盘data目录的info文件")
-					})
-					return
-				}
-				qqInfo.Login()
+			selected := BotForm.BotListView.Selected()
+			if selected == nil {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage("未选中正确的QQ进行操作")
+				})
+				return
 			}
+			botStr := selected.SubItems().Strings(0)
+			parseInt, _ := strconv.ParseInt(botStr, 10, 64)
+			cli, ok := Clients.Load(parseInt)
+			if ok {
+				vcl.ThreadSync(func() {
+					UpdateBotItem(parseInt, "", "离线", "", "", "离线")
+				})
+				cli.Disconnect()
+			}
+			var qqInfo QQInfo
+			fileByte := util.ReadFileByte(QQINFOPATH + botStr + QQINFOSKIN)
+			err := json.Unmarshal(fileByte, &qqInfo)
+			if err != nil {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage("反序列化失败，无法重新登录，请检测C盘data目录的info文件")
+				})
+				return
+			}
+			qqInfo.Login()
+
+			//sel := vcl.AsListView(BotForm.BotListView).Selected()
+			//if sel.IsValid() {
+			//	selectQQStr := TempBotData[sel.Index()].QQ
+			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+			//	cli, ok := Clients.Load(selectQQInt)
+			//	if ok {
+			//		cli.Disconnect()
+			//		TempBotData[sel.Index()].Status = "离线"
+			//		TempBotData[sel.Index()].Note = "离线"
+			//	}
+			//	var qqInfo QQInfo
+			//	fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
+			//	err := json.Unmarshal(fileByte, &qqInfo)
+			//	if err != nil {
+			//		vcl.ThreadSync(func() {
+			//			vcl.ShowMessage("反序列化失败，无法重新登录，请检测C盘data目录的info文件")
+			//		})
+			//		return
+			//	}
+			//	qqInfo.Login()
+			//}
 		}()
 	})
 
@@ -182,17 +208,32 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	item5.SetCaption("下线")
 	item5.SetOnClick(func(sender vcl.IObject) {
 		go func() {
-			sel := vcl.AsListView(BotForm.BotListView).Selected()
-			if sel.IsValid() {
-				selectQQStr := TempBotData[sel.Index()].QQ
-				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-				cli, ok := Clients.Load(selectQQInt)
-				if ok {
-					cli.Disconnect()
-				}
-				TempBotData[sel.Index()].Status = "离线"
-				TempBotData[sel.Index()].Note = "离线"
+			selected := BotForm.BotListView.Selected()
+			if selected == nil {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage("未选中正确的QQ进行操作")
+				})
+				return
 			}
+			botStr := selected.SubItems().Strings(0)
+			parseInt, _ := strconv.ParseInt(botStr, 10, 64)
+			cli, ok := Clients.Load(parseInt)
+			if ok {
+				cli.Disconnect()
+			}
+			UpdateBotItem(parseInt, "", "离线", "", "", "离线")
+
+			//sel := vcl.AsListView(BotForm.BotListView).Selected()
+			//if sel.IsValid() {
+			//	selectQQStr := TempBotData[sel.Index()].QQ
+			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+			//	cli, ok := Clients.Load(selectQQInt)
+			//	if ok {
+			//		cli.Disconnect()
+			//	}
+			//	TempBotData[sel.Index()].Status = "离线"
+			//	TempBotData[sel.Index()].Note = "离线"
+			//}
 		}()
 	})
 
@@ -200,24 +241,45 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	item6.SetCaption("自动登录/取消自动登录")
 	item6.SetOnClick(func(sender vcl.IObject) {
 		go func() {
-			sel := vcl.AsListView(BotForm.BotListView).Selected()
-			if sel.IsValid() {
-				selectQQStr := TempBotData[sel.Index()].QQ
-				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-				var qqInfo QQInfo
-				fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
-				_ = json.Unmarshal(fileByte, &qqInfo)
-				qqInfo.AutoLogin = !qqInfo.AutoLogin
-				marshal, _ := json.Marshal(qqInfo)
-				util.WriteFile(QQINFOPATH+selectQQStr+QQINFOSKIN, marshal)
-				f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-				index := GetBotIndex(selectQQInt)
-				if qqInfo.AutoLogin {
-					TempBotData[index].Auto = "√"
-				} else {
-					TempBotData[index].Auto = "X"
-				}
+			selected := BotForm.BotListView.Selected()
+			if selected == nil {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage("未选中正确的QQ进行操作")
+				})
+				return
 			}
+			botStr := selected.SubItems().Strings(0)
+			parseInt, _ := strconv.ParseInt(botStr, 10, 64)
+			var qqInfo QQInfo
+			fileByte := util.ReadFileByte(QQINFOPATH + botStr + QQINFOSKIN)
+			_ = json.Unmarshal(fileByte, &qqInfo)
+			qqInfo.AutoLogin = !qqInfo.AutoLogin
+			marshal, _ := json.Marshal(qqInfo)
+			util.WriteFile(QQINFOPATH+botStr+QQINFOSKIN, marshal)
+			if qqInfo.AutoLogin {
+				UpdateBotItem(parseInt, "", "", "", "√", "")
+			} else {
+				UpdateBotItem(parseInt, "", "", "", "X", "")
+			}
+
+			//sel := vcl.AsListView(BotForm.BotListView).Selected()
+			//if sel.IsValid() {
+			//	selectQQStr := TempBotData[sel.Index()].QQ
+			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+			//	var qqInfo QQInfo
+			//	fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
+			//	_ = json.Unmarshal(fileByte, &qqInfo)
+			//	qqInfo.AutoLogin = !qqInfo.AutoLogin
+			//	marshal, _ := json.Marshal(qqInfo)
+			//	util.WriteFile(QQINFOPATH+selectQQStr+QQINFOSKIN, marshal)
+			//	//f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+			//	index := GetBotIndex(selectQQInt)
+			//	if qqInfo.AutoLogin {
+			//		TempBotData[index].Auto = "√"
+			//	} else {
+			//		TempBotData[index].Auto = "X"
+			//	}
+			//}
 		}()
 	})
 
@@ -225,21 +287,44 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 	item7.SetCaption("删除")
 	item7.SetOnClick(func(sender vcl.IObject) {
 		go func() {
-			sel := vcl.AsListView(BotForm.BotListView).Selected()
-			if sel.IsValid() {
-				selectQQStr := TempBotData[sel.Index()].QQ
-				selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-				cli, ok := Clients.Load(selectQQInt)
-				if ok && cli.Online.Load() {
-					cli.Disconnect()
-					BuhuangBotOffline(selectQQInt)
-				}
-				util.DelFile(QQINFOPATH + selectQQStr + QQINFOSKIN)
-				TempBotLock.Lock()
-				TempBotData = append(TempBotData[:sel.Index()], TempBotData[sel.Index()+1:]...)
-				TempBotLock.Unlock()
-				f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+			selected := BotForm.BotListView.Selected()
+			if selected == nil {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage("未选中正确的QQ进行操作")
+				})
+				return
 			}
+			botStr := selected.SubItems().Strings(0)
+			parseInt, _ := strconv.ParseInt(botStr, 10, 64)
+			cli, ok := Clients.Load(parseInt)
+			if ok && cli.Online.Load() {
+				cli.Disconnect()
+				BuhuangBotOffline(parseInt)
+			}
+			index := GetBotIndex(parseInt)
+			DeleteBotItem(parseInt)
+			TempBotLock.Lock()
+			TempBotData = append(TempBotData[:index], TempBotData[index+1:]...)
+			TempBotLock.Unlock()
+			f.BotListView.Items().SetCount(int32(len(TempBotData)))
+			util.DelFile(QQINFOPATH + botStr + QQINFOSKIN)
+			//BotForm.Icons.Delete(index)
+			//BotForm.BotListView.SetStateImages(BotForm.Icons)
+			//sel := vcl.AsListView(BotForm.BotListView).Selected()
+			//if sel.IsValid() {
+			//	selectQQStr := TempBotData[sel.Index()].QQ
+			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
+			//	cli, ok := Clients.Load(selectQQInt)
+			//	if ok && cli.Online.Load() {
+			//		cli.Disconnect()
+			//		BuhuangBotOffline(selectQQInt)
+			//	}
+			//	util.DelFile(QQINFOPATH + selectQQStr + QQINFOSKIN)
+			//	TempBotLock.Lock()
+			//	TempBotData = append(TempBotData[:sel.Index()], TempBotData[sel.Index()+1:]...)
+			//	TempBotLock.Unlock()
+			//	//f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
+			//}
 		}()
 	})
 	f.SelectedMenu = vcl.NewPopupMenu(f.BotListView)
@@ -269,16 +354,17 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 		}
 		canvas := sender.Canvas()
 		boundRect := item.DisplayRect(types.DrBounds)
+		boundRect.Right = 50
 		//当前状态，鼠标选中的那行显示的颜色
 		data := TempBotData[item.Index()]
-		drawFlags := types.NewSet(types.TfCenter, types.TfSingleLine, types.TfVerticalCenter)
+		//drawFlags := types.NewSet(types.TfCenter, types.TfSingleLine, types.TfVerticalCenter)
 		var i int32
 		font := canvas.Font()
-		if state.In(types.CdsFocused) {
-			canvas.Brush().SetColor(colors.ClBisque)
-		} else {
-			canvas.Brush().SetColor(sender.Color())
-		}
+		//if state.In(types.CdsFocused) {
+		//	canvas.Brush().SetColor(colors.ClBisque)
+		//} else {
+		//	//canvas.Brush().SetColor(sender.Color())
+		//}
 		canvas.FillRect(boundRect)
 		font.SetColor(colors.ClBlack)
 
@@ -292,18 +378,18 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				if !f.TempIco.Empty() {
 					canvas.Draw(r.Right/2-hw/2, r.Top+(r.Bottom-r.Top-hw)/2, f.TempIco)
 				}
-			case 1:
-				canvas.TextRect2(&r, data.QQ, drawFlags)
-			case 2:
-				canvas.TextRect2(&r, data.NickName, drawFlags)
-			case 3:
-				canvas.TextRect2(&r, data.Status, drawFlags)
-			case 4:
-				canvas.TextRect2(&r, data.Protocol, drawFlags)
-			case 5:
-				canvas.TextRect2(&r, data.Auto, drawFlags)
-			case 6:
-				canvas.TextRect2(&r, data.Note, drawFlags)
+				//case 1:
+				//	canvas.TextRect2(&r, data.QQ, drawFlags)
+				//case 2:
+				//	canvas.TextRect2(&r, data.NickName, drawFlags)
+				//case 3:
+				//	canvas.TextRect2(&r, data.Status, drawFlags)
+				//case 4:
+				//	canvas.TextRect2(&r, data.Protocol, drawFlags)
+				//case 5:
+				//	canvas.TextRect2(&r, data.Auto, drawFlags)
+				//case 6:
+				//	canvas.TextRect2(&r, data.Note, drawFlags)
 			}
 		}
 	})
@@ -338,15 +424,69 @@ func SetBotAvatar(botId int64, index int32) {
 	}
 	avatarUrl := AvatarUrlPre + strconv.FormatInt(botId, 10)
 	bytes, err := util.GetBytes(avatarUrl)
-	//util.WriteFile(strconv.FormatInt(botId, 10)+".png", bytes)
 	if err == nil {
 		vcl.ThreadSync(func() {
 			pic := vcl.NewPicture()
 			pic.LoadFromBytes(bytes)
 			BotForm.Icons.AddSliced(pic.Bitmap(), 1, 1)
 			pic.Free()
-			BotForm.BotListView.SetStateImages(BotForm.Icons)
+			//BotForm.BotListView.SetStateImages(BotForm.Icons)
 			SetBotAvatarIndex(botId, index)
 		})
 	}
+}
+
+func UpdateBotItem(botId int64, nickName, status, protocol, Auto, note string) {
+	if botId == 0 {
+		vcl.ShowMessage("验证错误")
+		return
+	}
+	botIdStr := strconv.FormatInt(botId, 10)
+	index := GetBotIndex(botId)
+	if index == -1 {
+		vcl.ThreadSync(func() {
+			BotForm.BotListView.Items().BeginUpdate()
+			item := BotForm.BotListView.Items().Add()
+			item.SetCaption("")
+			subItems := item.SubItems()
+			subItems.Add(botIdStr)
+			subItems.Add(nickName)
+			subItems.Add(status)
+			subItems.Add(protocol)
+			subItems.Add(Auto)
+			subItems.Add(note)
+			BotForm.BotListView.Items().EndUpdate()
+		})
+	} else {
+		vcl.ThreadSync(func() {
+			BotForm.BotListView.Items().BeginUpdate()
+			item := BotForm.BotListView.Items().Item(index).SubItems()
+			if nickName != "" {
+				TempBotData[index].NickName = nickName
+				item.SetStrings(1, nickName)
+			}
+			if status != "" {
+				TempBotData[index].Status = status
+				item.SetStrings(2, status)
+			}
+			if protocol != "" {
+				TempBotData[index].Protocol = protocol
+				item.SetStrings(3, protocol)
+			}
+			if Auto != "" {
+				TempBotData[index].Auto = Auto
+				item.SetStrings(4, Auto)
+			}
+			if note != "" {
+				TempBotData[index].Note = note
+				item.SetStrings(5, note)
+			}
+			BotForm.BotListView.Items().EndUpdate()
+		})
+	}
+}
+
+func DeleteBotItem(botId int64) {
+	index := GetBotIndex(botId)
+	BotForm.BotListView.Items().Delete(index)
 }

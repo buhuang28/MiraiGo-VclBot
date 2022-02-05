@@ -40,6 +40,7 @@ func AddTempBotData(data TTempItem) {
 	defer TempBotLock.Unlock()
 	i, _ := strconv.ParseInt(data.QQ, 10, 64)
 	index := GetBotIndex(i)
+	UpdateBotItem(i, data.NickName, data.Status, data.Protocol, data.Auto, data.Note)
 	if index != -1 {
 		return
 	}

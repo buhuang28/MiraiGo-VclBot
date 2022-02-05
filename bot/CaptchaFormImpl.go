@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/types"
+	"strconv"
 	"strings"
 )
 
@@ -57,18 +58,27 @@ func (f *TCaptchaForm) OnFormCreate(sender vcl.IObject) {
 		f.Hide()
 		f.Captcha.Hide()
 		f.Code.Clear()
-		index := GetBotIndex(TempCaptchaQQ)
-		TempCaptchaQQ = 0
+		//index := GetBotIndex(TempCaptchaQQ)
+		defer func() {
+			TempCaptchaQQ = 0
+		}()
 		if err != nil || !rsp.Success {
-			TempBotData[index].Status = "离线"
-			TempBotData[index].Note = "登录失败"
+			//TempBotData[index].Status = "离线"
+			//TempBotData[index].Note = "登录失败,图片验证码提交失败"
+			UpdateBotItem(TempCaptchaQQ, "", OFFLINE, "", "", PICCODE_CAPTCHA_ERROR)
 			log.Info("图片验证码提交后出错:", err)
+			go func() {
+				vcl.ThreadSync(func() {
+					vcl.ShowMessage(strconv.FormatInt(TempCaptchaQQ, 10) + "登录失败:" + err.Error())
+				})
+			}()
 			cli.Disconnect()
 			return
 		}
 		if rsp.Success {
-			TempBotData[index].Status = "在线"
-			TempBotData[index].Note = "登录成功"
+			UpdateBotItem(TempCaptchaQQ, "", ONLINE, "", "", LOGIN_SUCCESS)
+			//TempBotData[index].Status = "在线"
+			//TempBotData[index].Note = "登录成功"
 			go AfterLogin(cli, -1)
 		}
 	})
