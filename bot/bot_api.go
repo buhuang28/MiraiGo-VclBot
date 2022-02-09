@@ -165,6 +165,13 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 	nt := time.Now().Unix()
 	ret := cli.SendGroupMessage(groupId, sendingMessage, false)
 	nt2 := time.Now().Unix()
+	if ret == nil {
+		ret = cli.SendGroupMessage(groupId, sendingMessage, false)
+	}
+	if ret == nil {
+		log.Info("疑似highway调用失败")
+		return -2
+	}
 	if ret.Id == -1 {
 		log.Info("发送失败使用时间:", nt2-nt)
 	} else {

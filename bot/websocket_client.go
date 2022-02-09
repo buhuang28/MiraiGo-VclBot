@@ -128,6 +128,9 @@ func HandleWSMsg() {
 				if rId == -1 {
 					handleErrorMsg(data.BotId, data.GroupId, data.MessageId, data.Message)
 				}
+				if rId == -2 {
+					log.Info("疑似highway调用失败,消息内容:", data.Message)
+				}
 			case ws_data.GMC_WITHDRAW_MESSAGE:
 				BuBuhuangWithDrawMsg(cli, data.GroupId, data.MessageId, data.InternalId)
 			case ws_data.GMC_ALLGROUPMEMBER:
