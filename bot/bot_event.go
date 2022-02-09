@@ -7,6 +7,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client"
 	"github.com/Mrs4s/MiraiGo/message"
 	log "github.com/sirupsen/logrus"
+	"math/rand"
 	"time"
 )
 
@@ -97,7 +98,12 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 			log.Infof("未找到server")
 			return
 		}
-		cli.MarkGroupMessageReaded(event.GroupCode, int64(event.Id))
+		go func() {
+			intn := rand.Intn(100)
+			if intn > 90 {
+				cli.MarkGroupMessageReaded(event.GroupCode, int64(event.Id))
+			}
+		}()
 		var data ws_data.GMCWSData
 		data.BotId = cli.Uin
 		data.GroupId = event.GroupCode
@@ -125,6 +131,7 @@ func handleTempMessage(cli *client.QQClient, event *client.TempMessageEvent) {
 		}
 		//bot.WSWLock.Unlock()
 	}()
+	cli.MarkPrivateMessageReaded(event.Message.Sender.Uin, time.Now().Unix())
 	msg := MiraiMsgToRawMsg(cli, event.Message.Elements)
 	go func() {
 		AddLogItem(cli.Uin, event.Message.GroupCode, event.Message.Sender.Uin, ACCEPT, ACCEPT_TEMP, msg)

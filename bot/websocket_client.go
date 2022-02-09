@@ -50,7 +50,7 @@ func WSDailCall() {
 		//WsCon, _, err = websocket.DefaultDialer.Dial(WSServerAddr, WSClientHeader)
 		WsCon, err = websocket.Dial(WSServerAddr, "", WSClientOrigin)
 		if err != nil || WsCon == nil {
-			log.Infof("ws连接出错:", err)
+			log.Infof("没打开主程序:", err)
 			time.Sleep(time.Second * 2)
 			continue
 		} else {

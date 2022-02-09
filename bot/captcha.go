@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/ying32/govcl/vcl"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -134,7 +135,12 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 		cli.Disconnect()
 		return false
 	case client.OtherLoginError, client.UnknownLoginError:
-		log.Errorf(rsp.ErrorMessage)
+		Clients.Delete(cli.Uin)
+		if strings.Contains(rsp.ErrorMessage, "冻结") {
+			UpdateBotItem(cli.Uin, "", "冻结", "", "", "账号被冻结")
+			return false
+		}
+		//log.Errorf(rsp.ErrorMessage)
 		go func() {
 			vcl.ThreadSync(func() {
 				vcl.ShowMessage(strconv.FormatInt(cli.Uin, 10) + "登录失败:" + rsp.ErrorMessage)
