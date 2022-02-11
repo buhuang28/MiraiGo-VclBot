@@ -40,4 +40,5 @@ func main() {
 	//bot.SMSForm.Show()
 	//bot.DeviceVerifyForm.Show()
 	vcl.Application.Run()
+
 }

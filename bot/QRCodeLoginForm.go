@@ -8,8 +8,9 @@ var (
 
 type TQRCodeLoginForm struct {
 	*vcl.TForm
-	Image         *vcl.TImage
-	ProtocolText  *vcl.TLabel
-	ProtocolCheck *vcl.TComboBox
-	AutoLogin     *vcl.TCheckBox
+	Image           *vcl.TImage
+	ProtocolText    *vcl.TLabel
+	ProtocolCheck   *vcl.TComboBox
+	AutoLogin       *vcl.TCheckBox
+	GetQRCodeButton *vcl.TButton
 }

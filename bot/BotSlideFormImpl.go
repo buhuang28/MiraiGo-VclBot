@@ -36,7 +36,6 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 	f.VerifyQRCodeLabel.SetTop(f.VerifyUrlLabel.Top() + 40)
 	f.VerifyQRCodeLabel.SetCaption("验证二维码:")
 
-	//code := util.CreateQRCode("http://www.baidu.com", 150)
 	f.VerifyQRCode = vcl.NewImage(f)
 	f.VerifyQRCode.SetParent(f)
 	f.VerifyQRCode.SetTop(f.VerifyQRCodeLabel.Top() - 3)
@@ -76,25 +75,17 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 			f.Hide()
 			f.Ticket.Clear()
 			f.VerifyQRCode.Hide()
-			//index := GetBotIndex(TempCaptchaQQ)
 			TempCaptchaQQ = 0
 			if rsp.Success {
-				//TempBotData[index].Status = "在线"
-				//TempBotData[index].Note = "登录成功"
 				UpdateBotItem(cli.Uin, "", ONLINE, "", "", LOGIN_SUCCESS)
 				go AfterLogin(cli, -1)
 				return
 			}
 			if err != nil || !rsp.Success {
-				//TempBotData[index].Status = "离线"
-				//TempBotData[index].Note = "登录失败"
-				UpdateBotItem(cli.Uin, "", OFFLINE, "", "", SLIDE_CAPTCHA_ERROR)
+				UpdateBotItem(cli.Uin, "", OFFLINE, "", "", rsp.ErrorMessage)
 				log.Info("滑块提交后出错:", err)
-				go func() {
-					vcl.ThreadSync(func() {
-						vcl.ShowMessage("提交滑块后出错" + err.Error())
-					})
-				}()
+				log.Info("滑块提交后出错2:", rsp.ErrorMessage)
+				log.Info("滑块提交后出错3:", rsp.Success)
 				cli.Disconnect()
 				return
 			}

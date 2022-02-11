@@ -2,10 +2,14 @@ package bot
 
 import (
 	"MiraiGo-VclBot/device"
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/client"
 	log "github.com/sirupsen/logrus"
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/types"
+	"io/ioutil"
+	"path"
+	"strconv"
 	"time"
 )
 
@@ -45,6 +49,76 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.AutoLogin.SetCaption("自动登录")
 	f.AutoLogin.SetTop(80)
 	f.AutoLogin.SetLeft(180)
+	f.GetQRCodeButton = vcl.NewButton(f)
+	f.GetQRCodeButton.SetParent(f)
+	f.GetQRCodeButton.SetCaption("获取登录二维码")
+	f.GetQRCodeButton.SetHeight(25)
+	f.GetQRCodeButton.SetWidth(120)
+	f.GetQRCodeButton.SetLeft(18)
+	f.GetQRCodeButton.SetTop(145)
+
+	f.GetQRCodeButton.SetOnClick(func(sender vcl.IObject) {
+		qrCodeUrlBytes := GetQRCodeUrl(QRCodeLoginForm.ProtocolCheck.Items().IndexOf(QRCodeLoginForm.ProtocolCheck.Text()))
+		QRCodeLoginForm.Image.Picture().LoadFromBytes(qrCodeUrlBytes)
+		go func() {
+			if qrCodeBot.Online.Load() {
+				return
+			}
+			thisSig := tempLoginSig
+			tempLoginSig = []byte("")
+			for i := 0; i < 100; i++ {
+				queryQRCodeStatusResp, err := qrCodeBot.QueryQRCodeStatus(thisSig)
+				if err != nil {
+					log.Info("failed to query qrcode status:", err)
+					break
+				}
+				if queryQRCodeStatusResp.State != client.QRCodeConfirmed {
+					time.Sleep(time.Second * 3)
+					continue
+				}
+				loginResp, err := qrCodeBot.QRCodeLogin(queryQRCodeStatusResp.LoginInfo)
+				if err != nil || !loginResp.Success {
+					UpdateBotItem(qrCodeBot.Uin, qrCodeBot.Nickname, OFFLINE, "", "", loginResp.ErrorMessage)
+					log.Info("扫码登录失败:", err)
+					break
+				}
+
+				log.Infof("扫码登录成功")
+				originCli, ok := Clients.Load(qrCodeBot.Uin)
+				if ok {
+					originCli.Release()
+				}
+				botLock.Lock()
+				index := GetBotIndex(qrCodeBot.Uin)
+
+				var botData TTempItem
+				botData.IconIndex = index
+				botData.NickName = qrCodeBot.Nickname
+				botData.QQ = strconv.FormatInt(qrCodeBot.Uin, 10)
+				botData.Protocol = QRCodeLoginForm.ProtocolCheck.Text()
+				botData.Status = ONLINE
+				botData.Note = LOGIN_SUCCESS
+				if QRCodeLoginForm.AutoLogin.Checked() {
+					botData.Auto = "√"
+				} else {
+					botData.Auto = "X"
+				}
+				SetBotAvatar(qrCodeBot.Uin, index)
+				AddTempBotData(botData)
+				var qqInfo QQInfo
+				qqInfo.StoreLoginInfo(qrCodeBot.Uin, [16]byte{}, qrCodeBot.GenToken(), int32(tempDeviceInfo.Protocol), QRCodeLoginForm.AutoLogin.Checked())
+				Clients.Store(qrCodeBot.Uin, qrCodeBot)
+				go AfterLogin(qrCodeBot, int32(tempDeviceInfo.Protocol))
+				devicePath := path.Join("device", fmt.Sprintf("device-%d.json", qrCodeBot.Uin))
+				_ = ioutil.WriteFile(devicePath, tempDeviceInfo.ToJson(), 0644)
+				qrCodeBot = nil
+				break
+			}
+			vcl.ThreadSync(func() {
+				QRCodeLoginForm.Hide()
+			})
+		}()
+	})
 }
 
 var (

@@ -38,8 +38,15 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 	if rsp.Error == client.SMSOrVerifyNeededError {
 		rsp.Error = client.SMSNeededError
 	}
+
+	if strings.Contains(rsp.ErrorMessage, "冻结") {
+		UpdateBotItem(cli.Uin, "", "冻结", "", "", "账号被冻结")
+		Clients.Delete(cli.Uin)
+		return false
+	}
+
 	if TempCaptchaQQ != 0 {
-		vcl.ShowMessage("还有正在处理登录验证的机器人:" + strconv.FormatInt(TempCaptchaQQ, 10) + "错误问题:" + rsp.ErrorMessage)
+		//vcl.ShowMessage("还有正在处理登录验证的机器人:" + strconv.FormatInt(TempCaptchaQQ, 10) + "错误问题:" + rsp.ErrorMessage)
 		return false
 	}
 	TempCaptchaQQ = cli.Uin
