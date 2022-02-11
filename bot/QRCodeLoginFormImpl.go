@@ -60,12 +60,13 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.GetQRCodeButton.SetOnClick(func(sender vcl.IObject) {
 		qrCodeUrlBytes := GetQRCodeUrl(QRCodeLoginForm.ProtocolCheck.Items().IndexOf(QRCodeLoginForm.ProtocolCheck.Text()))
 		QRCodeLoginForm.Image.Picture().LoadFromBytes(qrCodeUrlBytes)
+		QRCodeLoginForm.Image.Show()
 		go func() {
 			if qrCodeBot.Online.Load() {
+				log.Info(qrCodeBot.Uin, "已在线")
 				return
 			}
 			thisSig := tempLoginSig
-			tempLoginSig = []byte("")
 			for i := 0; i < 100; i++ {
 				queryQRCodeStatusResp, err := qrCodeBot.QueryQRCodeStatus(thisSig)
 				if err != nil {
@@ -82,17 +83,21 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 					log.Info("扫码登录失败:", err)
 					break
 				}
-
 				log.Infof("扫码登录成功")
 				originCli, ok := Clients.Load(qrCodeBot.Uin)
 				if ok {
 					originCli.Release()
 				}
-				botLock.Lock()
-				index := GetBotIndex(qrCodeBot.Uin)
-
 				var botData TTempItem
-				botData.IconIndex = index
+
+				index := GetBotIndex(qrCodeBot.Uin)
+				if index == -1 {
+					botData.IconIndex = int32(len(TempBotData))
+					SetBotAvatar(qrCodeBot.Uin, int32(len(TempBotData)))
+				} else {
+					botData.IconIndex = index
+				}
+				//这里index一般是-1
 				botData.NickName = qrCodeBot.Nickname
 				botData.QQ = strconv.FormatInt(qrCodeBot.Uin, 10)
 				botData.Protocol = QRCodeLoginForm.ProtocolCheck.Text()
@@ -103,8 +108,9 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 				} else {
 					botData.Auto = "X"
 				}
-				SetBotAvatar(qrCodeBot.Uin, index)
 				AddTempBotData(botData)
+				//index = GetBotIndex(qrCodeBot.Uin)
+				//SetBotAvatar(qrCodeBot.Uin, index)
 				var qqInfo QQInfo
 				qqInfo.StoreLoginInfo(qrCodeBot.Uin, [16]byte{}, qrCodeBot.GenToken(), int32(tempDeviceInfo.Protocol), QRCodeLoginForm.AutoLogin.Checked())
 				Clients.Store(qrCodeBot.Uin, qrCodeBot)
@@ -115,6 +121,7 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 				break
 			}
 			vcl.ThreadSync(func() {
+				QRCodeLoginForm.Image.Hide()
 				QRCodeLoginForm.Hide()
 			})
 		}()
