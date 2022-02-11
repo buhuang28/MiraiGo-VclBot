@@ -93,10 +93,10 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 				index := GetBotIndex(qrCodeBot.Uin)
 				if index == -1 {
 					botData.IconIndex = int32(len(TempBotData))
-					SetBotAvatar(qrCodeBot.Uin, int32(len(TempBotData)))
 				} else {
 					botData.IconIndex = index
 				}
+				SetBotAvatar(qrCodeBot.Uin, botData.IconIndex)
 				//这里index一般是-1
 				botData.NickName = qrCodeBot.Nickname
 				botData.QQ = strconv.FormatInt(qrCodeBot.Uin, 10)
