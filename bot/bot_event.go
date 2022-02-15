@@ -93,7 +93,7 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 		go func() {
 			AddLogItem(cli.Uin, event.GroupCode, event.Sender.Uin, ACCEPT, ACCEPT_GROUP, msg)
 		}()
-		log.Info("收到群聊消息")
+		log.Info("收到群聊消息:", msg)
 		if WsCon == nil {
 			log.Infof("未找到server")
 			return
@@ -131,7 +131,7 @@ func handleTempMessage(cli *client.QQClient, event *client.TempMessageEvent) {
 		}
 		//bot.WSWLock.Unlock()
 	}()
-	cli.MarkPrivateMessageReaded(event.Message.Sender.Uin, time.Now().Unix())
+	//cli.MarkPrivateMessageReaded(event.Message.Sender.Uin, time.Now().Unix())
 	msg := MiraiMsgToRawMsg(cli, event.Message.Elements)
 	go func() {
 		AddLogItem(cli.Uin, event.Message.GroupCode, event.Message.Sender.Uin, ACCEPT, ACCEPT_TEMP, msg)
@@ -215,7 +215,7 @@ func handleMemberLeaveGroup(cli *client.QQClient, event *client.MemberLeaveGroup
 	WsCon.Write(marshal)
 }
 
-//有人申请入群
+//入群申请
 func handleUserJoinGroupRequest(cli *client.QQClient, event *client.UserJoinGroupRequest) {
 	defer func() {
 		e := recover()

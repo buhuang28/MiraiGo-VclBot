@@ -2,11 +2,13 @@ package main
 
 import (
 	"MiraiGo-VclBot/bot"
+	"MiraiGo-VclBot/bot_log"
 	_ "github.com/ying32/govcl/pkgs/winappres"
 	"github.com/ying32/govcl/vcl"
 )
 
 func init() {
+	go bot_log.InitLog()
 	go bot.WSDailCall()
 	go bot.HandleWSMsg()
 }

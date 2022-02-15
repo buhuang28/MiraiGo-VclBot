@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-func init() {
-	//InitLog()
-}
-
 func InitLog() {
 	// 输出到命令行
 	customFormatter := &log.TextFormatter{

@@ -21,7 +21,6 @@ func (f *TSMSForm) OnFormCreate(sender vcl.IObject) {
 	f.TipLabel.SetParent(f)
 	f.TipLabel.SetLeft(10)
 	f.TipLabel.SetTop(20)
-	//f.TipLabel.SetCaption("已向1231231233的手机发送验证码")
 
 	f.SMSLabel = vcl.NewLabel(f)
 	f.SMSLabel.SetParent(f)
@@ -59,24 +58,13 @@ func (f *TSMSForm) OnFormCreate(sender vcl.IObject) {
 		defer func() {
 			TempCaptchaQQ = 0
 		}()
-		//index := GetBotIndex(TempCaptchaQQ)
-		//TempCaptchaQQ = 0
 		if err != nil || !rsp.Success {
-			UpdateBotItem(TempCaptchaQQ, "", OFFLINE, "", "", SMS_CAPTCHA_ERROR)
-			//TempBotData[index].Status = "离线"
-			//TempBotData[index].Note = "登录失败"
+			UpdateBotItem(TempCaptchaQQ, "", OFFLINE, "", "", err.Error())
 			log.Info("短信验证码提交后出错:", err)
 			cli.Disconnect()
-			go func() {
-				vcl.ThreadSync(func() {
-					vcl.ShowMessage("短信验证码提交后出错" + err.Error())
-				})
-			}()
 			return
 		}
 		if rsp.Success {
-			//TempBotData[index].Status = "在线"
-			//TempBotData[index].Note = "登录成功"
 			UpdateBotItem(TempCaptchaQQ, "", ONLINE, "", "", LOGIN_SUCCESS)
 			go AfterLogin(cli, -1)
 		}

@@ -3,7 +3,7 @@ module MiraiGo-VclBot
 go 1.17
 
 require (
-	github.com/Mrs4s/MiraiGo v0.0.0-20220117165008-3b461554b747
+	github.com/Mrs4s/MiraiGo v0.0.0-20220214082717-0e68a1e7b715
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/pkg/errors v0.9.1
@@ -16,10 +16,9 @@ require (
 )
 
 require (
-	github.com/RomiChan/protobuf v0.0.0-20211223055824-048df49a8956 // indirect
+	github.com/RomiChan/protobuf v0.0.0-20220213164748-44b69c8bdec0 // indirect
 	github.com/fumiama/imgsz v0.0.2 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
-	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/lestrrat-go/strftime v1.0.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.11 // indirect
 	github.com/tidwall/gjson v1.11.0 // indirect

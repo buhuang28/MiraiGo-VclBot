@@ -16,7 +16,7 @@ type TForm1Fields struct {
 }
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
-	f.SetCaption("机器人列表 20220211-5")
+	f.SetCaption("机器人列表 20220214")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(400)
 	f.SetWidth(700)

@@ -94,7 +94,7 @@ func (q *QQInfo) Login() bool {
 			return true
 		}
 	}
-
+	UpdateBotItem(q.QQ, "", OFFLINE, "", "", "请重新扫码或者使用密码登录")
 	return false
 }
 
