@@ -34,13 +34,5 @@ func main() {
 	go func() {
 		bot.AutoLogin()
 	}()
-	//bot.PWLoginForm.Show()
-	//bot.BotSlideForm.Show()
-	//bot.QRCodeLoginForm.Show()
-	//bot.LogForm.Show()
-	//bot.CaptchaForm.Show()
-	//bot.SMSForm.Show()
-	//bot.DeviceVerifyForm.Show()
 	vcl.Application.Run()
-
 }

@@ -93,7 +93,7 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 		go func() {
 			AddLogItem(cli.Uin, event.GroupCode, event.Sender.Uin, ACCEPT, ACCEPT_GROUP, msg)
 		}()
-		log.Info("收到群聊消息:", msg)
+		log.Info("收到群聊消息")
 		if WsCon == nil {
 			log.Infof("未找到server")
 			return

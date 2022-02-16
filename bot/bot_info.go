@@ -4,7 +4,6 @@ import (
 	"MiraiGo-VclBot/device"
 	"MiraiGo-VclBot/util"
 	"encoding/json"
-	"fmt"
 	"github.com/Mrs4s/MiraiGo/client"
 	log "github.com/sirupsen/logrus"
 	"strconv"
@@ -47,7 +46,7 @@ func (q *QQInfo) StoreLoginInfo(qq int64, pw [16]byte, token []byte, clientProto
 func (q *QQInfo) Login() bool {
 	log.Info("开始登录", q.QQ)
 	if q.QQ != 0 && q.PassWord != [16]byte{} {
-		fmt.Println("开始密码登录")
+		log.Info(q.QQ, "开始密码登录")
 		success := CreateBotImplMd5(q.QQ, q.PassWord, q.QQ, q.ClientProtocol, q.AutoLogin)
 		if !success {
 			time.Sleep(time.Second * 3)
@@ -63,7 +62,7 @@ func (q *QQInfo) Login() bool {
 		deviceInfo := device.GetDevice(q.QQ, q.ClientProtocol)
 		botClient.UseDevice(deviceInfo)
 		err := botClient.TokenLogin(q.Token)
-		fmt.Println("开始使用token登录:", err)
+		log.Info("开始使用token登录:", err)
 		index := GetBotIndex(q.QQ)
 		var botData TTempItem
 		botData.IconIndex = index
@@ -83,9 +82,6 @@ func (q *QQInfo) Login() bool {
 		}
 		BotForm.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
 		if err == nil {
-			//TempBotData[index].NickName = botClient.Nickname
-			//TempBotData[index].Status = "在线"
-			//TempBotData[index].Note = "在线"
 			UpdateBotItem(q.QQ, botClient.Nickname, ONLINE, "", "", ONLINE)
 			InitLog(botClient)
 			log.Infof("初始化日志")

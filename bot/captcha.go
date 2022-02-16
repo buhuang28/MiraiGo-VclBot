@@ -86,8 +86,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			return false
 		} else {
 			go func() {
-				//index := GetBotIndex(cli.Uin)
-				//TempBotData[index].Note = "手机号" + rsp.SMSPhone + "请求短信验证码错误，可能是太频繁"
 				UpdateBotItem(cli.Uin, "", "", "", "", "手机号"+rsp.SMSPhone+"请求短信验证码错误，可能是太频繁")
 				vcl.ThreadSync(func() {
 					vcl.ShowMessage("手机号" + rsp.SMSPhone + "请求短信验证码错误，可能是太频繁")
@@ -106,7 +104,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			})
 		}()
 		var i int32
-		//index := GetBotIndex(TempCaptchaQQ)
 		for i = 0; i < 30; i++ {
 			cli.Disconnect()
 			time.Sleep(5 * time.Second)
@@ -114,8 +111,6 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			if err != nil || !resp.Success {
 				continue
 			} else {
-				//TempBotData[index].Status = "在线"
-				//TempBotData[index].Note = "登录成功"
 				UpdateBotItem(TempCaptchaQQ, "", ONLINE, "", "", LOGIN_SUCCESS)
 				TempCaptchaQQ = 0
 				go func() {

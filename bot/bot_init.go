@@ -74,11 +74,10 @@ func SetRelogin(cli *client.QQClient, retryInterval int, retryCount int) {
 			if times > retryCount {
 				break
 			}
-			log.Warnf("Bot已离线 (%v)，将在 %v 秒后尝试重连. 重连次数：%v",
-				e.Message, retryInterval, times)
 			times++
+			log.Warnf("Bot:%v已离线 (%v)，将在 %v 秒后尝试重连. 重连次数：%v", cli.Uin,
+				e.Message, retryInterval, times)
 			time.Sleep(time.Second * time.Duration(retryInterval))
-
 			if token, ok := LoginTokens.Load(bot.Uin); ok {
 				// 尝试token登录
 				if err := bot.TokenLogin(token); err != nil {
@@ -92,6 +91,11 @@ func SetRelogin(cli *client.QQClient, retryInterval int, retryCount int) {
 			}
 
 			time.Sleep(time.Second)
+
+			if cli.PasswordMd5 == [16]byte{} {
+				log.Errorf("%v无密码，无法使用密码重新登录", cli.Uin)
+				return
+			}
 
 			// 尝试密码登录
 			ok, err := Login(bot)

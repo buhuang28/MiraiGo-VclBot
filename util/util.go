@@ -409,7 +409,7 @@ func PrintStackTrace(err interface{}) {
 		}
 		fmt.Fprintf(buf, "%s:%d (0x%x)\n", file, line, pc)
 	}
-	fmt.Println(buf.String())
+	log.Println(buf.String())
 }
 
 func CreateQRCode(content string, size int) string {

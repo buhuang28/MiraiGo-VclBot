@@ -74,27 +74,20 @@ func AfterLogin(cli *client.QQClient, clientProtocol int32) bool {
 			util.PrintStackTrace(e)
 		}
 	}()
-	//for {
-	//	time.Sleep(5 * time.Second)
-	//	if cli.Online.Load() {
-	//		break
-	//	}
-	//	log.Warnf("%+v机器人不在线，可能在等待输入验证码，或出错了。如果出错请重启。", cli.Uin)
-	//}
 	Serve(cli)
 	log.Infof("刷新好友列表")
 	if err := cli.ReloadFriendList(); err != nil {
 		log.Info("刷新好友列表失败:", err)
 		//util.FatalError(fmt.Errorf("failed to load friend list, err: %+v", err))
 	}
-	log.Infof("共加载 %v 个好友.", len(cli.FriendList))
+	log.Infof("%v共加载 %v 个好友.", cli.Uin, len(cli.FriendList))
 
 	log.Infof("刷新群列表")
 	if err := cli.ReloadGroupList(); err != nil {
 		log.Info("刷新群列表失败:", err)
 		//util.FatalError(fmt.Errorf("failed to load group list, err: %+v", err))
 	}
-	log.Infof("共加载 %v 个群.", len(cli.GroupList))
+	log.Infof("%v共加载 %v 个群.", cli.Uin, len(cli.GroupList))
 
 	SetRelogin(cli, 30, 20)
 	BuhuangBotOnline(cli.Uin)
@@ -106,6 +99,7 @@ func AfterLogin(cli *client.QQClient, clientProtocol int32) bool {
 		if clientProtocol == -1 {
 			clientProtocol = qqInfo.ClientProtocol
 		}
+		LoginTokens.Store(cli.Uin, getToken)
 		qqInfo.StoreLoginInfo(cli.Uin, qqInfo.PassWord, getToken, clientProtocol, qqInfo.AutoLogin)
 		fmt.Println("获取token成功")
 	}()
