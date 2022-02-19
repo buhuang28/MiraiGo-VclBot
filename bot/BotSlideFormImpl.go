@@ -42,7 +42,6 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 	f.VerifyQRCode.SetLeft(f.VerifyQRCodeLabel.Left() + f.VerifyQRCodeLabel.Width() + 10)
 	f.VerifyQRCode.SetWidth(200)
 	f.VerifyQRCode.SetHeight(200)
-	//f.VerifyQRCode.Picture().LoadFromFile(code)
 
 	f.TicketLabel = vcl.NewLabel(f)
 	f.TicketLabel.SetParent(f)
@@ -83,6 +82,7 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 			}
 			if err != nil || !rsp.Success {
 				UpdateBotItem(cli.Uin, "", OFFLINE, "", "", rsp.ErrorMessage)
+				ProcessLoginRsp(cli, rsp)
 				log.Info("滑块提交后出错:", err)
 				log.Info("滑块提交后出错2:", rsp.ErrorMessage)
 				log.Info("滑块提交后出错3:", rsp.Success)

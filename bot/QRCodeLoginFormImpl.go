@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -57,8 +58,30 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 	f.GetQRCodeButton.SetLeft(18)
 	f.GetQRCodeButton.SetTop(145)
 
+	f.SeedLabel = vcl.NewLabel(f)
+	f.SeedLabel.SetParent(f)
+	f.SeedLabel.SetCaption("种子:")
+	f.SeedLabel.SetTop(f.AutoLogin.Top() + 30)
+	f.SeedLabel.SetLeft(f.AutoLogin.Left() + 15)
+
+	f.Seed = vcl.NewEdit(f)
+	f.Seed.SetParent(f)
+	f.Seed.SetTop(f.SeedLabel.Top() + 20)
+	f.Seed.SetWidth(80)
+	f.Seed.SetLeft(f.SeedLabel.Left() - 20)
+
 	f.GetQRCodeButton.SetOnClick(func(sender vcl.IObject) {
-		qrCodeUrlBytes := GetQRCodeUrl(QRCodeLoginForm.ProtocolCheck.Items().IndexOf(QRCodeLoginForm.ProtocolCheck.Text()))
+		var seed int64 = 0
+		seedStr := strings.TrimSpace(f.Seed.Text())
+		parseInt, err := strconv.ParseInt(seedStr, 10, 64)
+		if err != nil {
+			vcl.ShowMessage("种子错误，必须纯数字")
+			return
+		}
+		if parseInt != 0 {
+			seed = parseInt
+		}
+		qrCodeUrlBytes := GetQRCodeUrl(seed, QRCodeLoginForm.ProtocolCheck.Items().IndexOf(QRCodeLoginForm.ProtocolCheck.Text()))
 		QRCodeLoginForm.Image.Picture().LoadFromBytes(qrCodeUrlBytes)
 		QRCodeLoginForm.Image.Show()
 		go func() {
@@ -81,6 +104,7 @@ func (f *TQRCodeLoginForm) OnFormCreate(sender vcl.IObject) {
 				if err != nil || !loginResp.Success {
 					UpdateBotItem(qrCodeBot.Uin, qrCodeBot.Nickname, OFFLINE, "", "", loginResp.ErrorMessage)
 					log.Info("扫码登录失败:", err)
+					log.Infof("扫码登录失败:%v", loginResp)
 					break
 				}
 				log.Infof("扫码登录成功")
@@ -134,12 +158,16 @@ var (
 	tempLoginSig   []byte
 )
 
-func GetQRCodeUrl(clientProtocol int32) []byte {
+func GetQRCodeUrl(seed int64, clientProtocol int32) []byte {
 	if qrCodeBot != nil {
 		qrCodeBot.Release()
 	}
 	qrCodeBot = client.NewClientEmpty()
-	tempDeviceInfo = device.GetDevice(time.Now().Unix(), clientProtocol)
+	if seed != 0 {
+		tempDeviceInfo = device.GetDevice(seed, clientProtocol)
+	} else {
+		tempDeviceInfo = device.GetDevice(time.Now().Unix(), clientProtocol)
+	}
 	qrCodeBot.UseDevice(tempDeviceInfo)
 	log.Infof("初始化日志")
 	InitLog(qrCodeBot)

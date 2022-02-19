@@ -3,7 +3,7 @@ module MiraiGo-VclBot
 go 1.17
 
 require (
-	github.com/Mrs4s/MiraiGo v0.0.0-20220214082717-0e68a1e7b715
+	github.com/Mrs4s/MiraiGo v0.0.0-20220218101355-bd6f8947ef79
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/pkg/errors v0.9.1

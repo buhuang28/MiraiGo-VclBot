@@ -16,7 +16,7 @@ type TForm1Fields struct {
 }
 
 func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
-	f.SetCaption("机器人列表 20220216")
+	f.SetCaption("机器人列表 20220219")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(400)
 	f.SetWidth(700)
@@ -155,17 +155,6 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 				BuhuangBotOffline(parseInt)
 			}
 			UpdateBotItem(parseInt, "", "离线", "", "", "离线")
-			//sel := vcl.AsListView(BotForm.BotListView).Selected()
-			//if sel.IsValid() {
-			//	selectQQStr := TempBotData[sel.Index()].QQ
-			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-			//	cli, ok := Clients.Load(selectQQInt)
-			//	if ok {
-			//		cli.Disconnect()
-			//	}
-			//	TempBotData[sel.Index()].Status = "离线"
-			//	TempBotData[sel.Index()].Note = "离线"
-			//}
 		}()
 	})
 
@@ -193,25 +182,6 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			} else {
 				UpdateBotItem(parseInt, "", "", "", "X", "")
 			}
-
-			//sel := vcl.AsListView(BotForm.BotListView).Selected()
-			//if sel.IsValid() {
-			//	selectQQStr := TempBotData[sel.Index()].QQ
-			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-			//	var qqInfo QQInfo
-			//	fileByte := util.ReadFileByte(QQINFOPATH + selectQQStr + QQINFOSKIN)
-			//	_ = json.Unmarshal(fileByte, &qqInfo)
-			//	qqInfo.AutoLogin = !qqInfo.AutoLogin
-			//	marshal, _ := json.Marshal(qqInfo)
-			//	util.WriteFile(QQINFOPATH+selectQQStr+QQINFOSKIN, marshal)
-			//	//f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-			//	index := GetBotIndex(selectQQInt)
-			//	if qqInfo.AutoLogin {
-			//		TempBotData[index].Auto = "√"
-			//	} else {
-			//		TempBotData[index].Auto = "X"
-			//	}
-			//}
 		}()
 	})
 
@@ -240,23 +210,6 @@ func (f *TBotForm) OnFormCreate(sender vcl.IObject) {
 			TempBotLock.Unlock()
 			f.BotListView.Items().SetCount(int32(len(TempBotData)))
 			util.DelFile(QQINFOPATH + botStr + QQINFOSKIN)
-			//BotForm.Icons.Delete(index)
-			//BotForm.BotListView.SetStateImages(BotForm.Icons)
-			//sel := vcl.AsListView(BotForm.BotListView).Selected()
-			//if sel.IsValid() {
-			//	selectQQStr := TempBotData[sel.Index()].QQ
-			//	selectQQInt, _ := strconv.ParseInt(selectQQStr, 10, 64)
-			//	cli, ok := Clients.Load(selectQQInt)
-			//	if ok && cli.Online.Load() {
-			//		cli.Disconnect()
-			//		BuhuangBotOffline(selectQQInt)
-			//	}
-			//	util.DelFile(QQINFOPATH + selectQQStr + QQINFOSKIN)
-			//	TempBotLock.Lock()
-			//	TempBotData = append(TempBotData[:sel.Index()], TempBotData[sel.Index()+1:]...)
-			//	TempBotLock.Unlock()
-			//	//f.BotListView.Items().SetCount(int32(len(TempBotData))) //   必须主动的设置Virtual List的行数
-			//}
 		}()
 	})
 	f.SelectedMenu = vcl.NewPopupMenu(f.BotListView)

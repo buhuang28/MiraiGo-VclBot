@@ -13,4 +13,6 @@ type TQRCodeLoginForm struct {
 	ProtocolCheck   *vcl.TComboBox
 	AutoLogin       *vcl.TCheckBox
 	GetQRCodeButton *vcl.TButton
+	Seed            *vcl.TEdit
+	SeedLabel       *vcl.TLabel
 }

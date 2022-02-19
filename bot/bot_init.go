@@ -42,7 +42,6 @@ func Login(cli *client.QQClient) (bool, error) {
 			util.PrintStackTrace(e)
 		}
 	}()
-	cli.AllowSlider = true
 	rsp, err := cli.Login()
 	if err != nil {
 		return false, err
@@ -82,7 +81,7 @@ func SetRelogin(cli *client.QQClient, retryInterval int, retryCount int) {
 				// 尝试token登录
 				if err := bot.TokenLogin(token); err != nil {
 					log.Errorf("failed to relogin with token, try to login with password, %+v", err)
-					bot.Disconnect()
+					//bot.Disconnect()
 				} else {
 					LoginTokens.Store(bot.Uin, bot.GenToken())
 					log.Info("succeed to relogin with token")
