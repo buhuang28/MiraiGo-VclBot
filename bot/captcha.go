@@ -28,17 +28,12 @@ var (
 
 func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 	if rsp.Success {
-		//index := GetBotIndex(cli.Uin)
-		//TempBotData[index].NickName = cli.Nickname
-		//TempBotData[index].Status = "在线"
-		//TempBotData[index].Note = "登录成功"
 		UpdateBotItem(cli.Uin, cli.Nickname, ONLINE, "", "", LOGIN_SUCCESS)
 		return true
 	}
 	if rsp.Error == client.SMSOrVerifyNeededError {
 		rsp.Error = client.SMSNeededError
 	}
-
 	if strings.Contains(rsp.ErrorMessage, "冻结") {
 		UpdateBotItem(cli.Uin, "", "冻结", "", "", "账号被冻结")
 		Clients.Delete(cli.Uin)
@@ -133,7 +128,7 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 				DeviceVerifyForm.Hide()
 			})
 		}()
-		log.Info("设备扫码验证失败")
+		log.Error("设备扫码验证失败")
 		cli.Disconnect()
 		return false
 	case client.OtherLoginError, client.UnknownLoginError:
@@ -142,13 +137,12 @@ func ProcessLoginRsp(cli *client.QQClient, rsp *client.LoginResponse) bool {
 			UpdateBotItem(cli.Uin, "", "冻结", "", "", "账号被冻结")
 			return false
 		}
-		//log.Errorf(rsp.ErrorMessage)
 		go func() {
 			vcl.ThreadSync(func() {
 				vcl.ShowMessage(strconv.FormatInt(cli.Uin, 10) + "登录失败:" + rsp.ErrorMessage)
 			})
 		}()
-		log.Info(cli.Uin, "遇到登录错误:", rsp.ErrorMessage)
+		log.Error(cli.Uin, "遇到登录错误:", rsp.ErrorMessage)
 		return false
 	}
 	log.Info("process login error")

@@ -69,8 +69,8 @@ func (f *TBotSlideForm) OnFormCreate(sender vcl.IObject) {
 			}
 			cli, _ := Clients.Load(TempCaptchaQQ)
 			ticket := strings.TrimSpace(f.Ticket.Text())
+			fmt.Println("提交是ticket:", ticket)
 			rsp, err := cli.SubmitTicket(ticket)
-			fmt.Println("提交滑块验证码")
 			f.Hide()
 			f.Ticket.Clear()
 			f.VerifyQRCode.Hide()

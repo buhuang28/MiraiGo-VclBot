@@ -11,7 +11,7 @@ func (f *TSMSForm) OnFormCreate(sender vcl.IObject) {
 	f.SetCaption("短信")
 	f.SetDoubleBuffered(true)
 	f.SetHeight(120)
-	f.SetWidth(220)
+	f.SetWidth(240)
 	f.ScreenCenter()
 	f.SetBorderStyle(types.BsSingle)
 	f.EnabledMaximize(false)

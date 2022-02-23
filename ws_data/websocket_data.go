@@ -22,6 +22,7 @@ type GMCWSData struct {
 	GroupRequest   int64             `json:"group_request,omitempty"`
 	InvitorId      int64             `json:"invitor_id,omitempty"`
 	InvitorName    string            `json:"invitor_name,omitempty"`
+	NoticeId       int64             `json:"notice_id,omitempty"`
 }
 
 type GMCMember struct {

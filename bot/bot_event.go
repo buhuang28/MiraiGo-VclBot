@@ -48,13 +48,11 @@ func Serve(cli *client.QQClient) {
 
 //私聊消息
 func handlePrivateMessage(cli *client.QQClient, event *message.PrivateMessage) {
-	//bot.WSWLock.Lock()
 	defer func() {
 		e := recover()
 		if e != nil {
 			util.PrintStackTrace(e)
 		}
-		//bot.WSWLock.Unlock()
 	}()
 	msg := MiraiMsgToRawMsg(cli, event.Elements)
 	go func() {
@@ -71,11 +69,7 @@ func handlePrivateMessage(cli *client.QQClient, event *message.PrivateMessage) {
 	data.MsgType = ws_data.GMC_PRIVATE_MESSAGE
 	data.Message = msg
 	marshal, _ := json.Marshal(data)
-	//err := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
 	WsCon.Write(marshal)
-	//if err != nil {
-	//	log.Info("handlePrivateMessage出错", err)
-	//}
 }
 
 //群消息
@@ -93,7 +87,7 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 		go func() {
 			AddLogItem(cli.Uin, event.GroupCode, event.Sender.Uin, ACCEPT, ACCEPT_GROUP, msg)
 		}()
-		log.Info("收到群聊消息")
+		log.Info("收到群聊消息:", msg)
 		if WsCon == nil {
 			log.Infof("未找到server")
 			return
