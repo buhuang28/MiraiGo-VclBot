@@ -12,11 +12,6 @@ import (
 )
 
 const (
-	MessageIgnore = 0
-	MessageBlock  = 1
-)
-
-var (
 	REQUEST_ACCEPT int64 = 1
 	REQUEST_REJECT int64 = -1
 )
@@ -48,12 +43,6 @@ func Serve(cli *client.QQClient) {
 
 //私聊消息
 func handlePrivateMessage(cli *client.QQClient, event *message.PrivateMessage) {
-	defer func() {
-		e := recover()
-		if e != nil {
-			util.PrintStackTrace(e)
-		}
-	}()
 	msg := MiraiMsgToRawMsg(cli, event.Elements)
 	go func() {
 		AddLogItem(cli.Uin, 0, event.Sender.Uin, ACCEPT, ACCEPT_PRIVATE, msg)
@@ -68,33 +57,24 @@ func handlePrivateMessage(cli *client.QQClient, event *message.PrivateMessage) {
 	data.UserId = event.Sender.Uin
 	data.MsgType = ws_data.GMC_PRIVATE_MESSAGE
 	data.Message = msg
-	marshal, _ := json.Marshal(data)
-	WsCon.Write(marshal)
+	_ = SendWSMsg(data)
 }
 
 //群消息
 func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 	go func() {
-		defer func() {
-			e := recover()
-			if e != nil {
-				util.PrintStackTrace(e)
-			}
-			//bot.WSWLock.Unlock()
-		}()
-		//bot.WSWLock.Lock()
 		msg := MiraiMsgToRawMsg2(cli, event.GroupCode, event.Elements)
 		go func() {
 			AddLogItem(cli.Uin, event.GroupCode, event.Sender.Uin, ACCEPT, ACCEPT_GROUP, msg)
 		}()
-		log.Info("收到群聊消息:", msg)
+		log.Info("收到群聊消息")
 		if WsCon == nil {
 			log.Infof("未找到server")
 			return
 		}
 		go func() {
 			intn := rand.Intn(100)
-			if intn > 90 {
+			if intn > 80 {
 				cli.MarkGroupMessageReaded(event.GroupCode, int64(event.Id))
 			}
 		}()
@@ -106,31 +86,16 @@ func handleGroupMessage(cli *client.QQClient, event *message.GroupMessage) {
 		data.MessageId = int64(event.Id)
 		data.InternalId = event.InternalId
 		data.Message = msg
-		marshal, _ := json.Marshal(data)
-		//e := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
-		//if e != nil {
-		//log.Info("handleGroupMessage错误:", e)
-		//}
-		WsCon.Write(marshal)
+		_ = SendWSMsg(data)
 	}()
 }
 
 //临时消息
 func handleTempMessage(cli *client.QQClient, event *client.TempMessageEvent) {
-	//bot.WSWLock.Lock()
-	defer func() {
-		e := recover()
-		if e != nil {
-			util.PrintStackTrace(e)
-		}
-		//bot.WSWLock.Unlock()
-	}()
-	//cli.MarkPrivateMessageReaded(event.Message.Sender.Uin, time.Now().Unix())
 	msg := MiraiMsgToRawMsg(cli, event.Message.Elements)
 	go func() {
 		AddLogItem(cli.Uin, event.Message.GroupCode, event.Message.Sender.Uin, ACCEPT, ACCEPT_TEMP, msg)
 	}()
-	//log.Info("收到", event.Message.GroupCode, "群,", event.Message.Sender.Uin, "的临时私聊消息:", msg)
 	if WsCon == nil {
 		return
 	}
@@ -140,24 +105,11 @@ func handleTempMessage(cli *client.QQClient, event *client.TempMessageEvent) {
 	data.UserId = event.Message.Sender.Uin
 	data.MsgType = ws_data.GMC_TEMP_MESSAGE
 	data.Message = msg
-	marshal, _ := json.Marshal(data)
-	//err := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
-	//if err != nil {
-	//log.Info("handleTempMessage出错:", err)
-	//}
-	WsCon.Write(marshal)
+	_ = SendWSMsg(data)
 }
 
 //有人入群
 func handleMemberJoinGroup(cli *client.QQClient, event *client.MemberJoinGroupEvent) {
-	//bot.WSWLock.Lock()
-	defer func() {
-		e := recover()
-		if e != nil {
-			util.PrintStackTrace(e)
-		}
-		//bot.WSWLock.Unlock()
-	}()
 	log.Info("收到入群信息")
 	go func() {
 		AddLogItem(cli.Uin, event.Group.Code, event.Member.Uin, ACCEPT, ACCEPT_MEMBER_INSERT, "")
@@ -171,24 +123,11 @@ func handleMemberJoinGroup(cli *client.QQClient, event *client.MemberJoinGroupEv
 	data.NickName = event.Member.Nickname
 	data.BotId = cli.Uin
 	data.MsgType = ws_data.GMC_MEMBER_ADD
-	marshal, _ := json.Marshal(data)
-	//err := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
-	//if err != nil {
-	//log.Info("handleMemberJoinGroup出错", err)
-	//}
-	WsCon.Write(marshal)
+	_ = SendWSMsg(data)
 }
 
 //有人离开
 func handleMemberLeaveGroup(cli *client.QQClient, event *client.MemberLeaveGroupEvent) {
-	//bot.WSWLock.Lock()
-	defer func() {
-		e := recover()
-		if e != nil {
-			util.PrintStackTrace(e)
-		}
-		//bot.WSWLock.Unlock()
-	}()
 	log.Info("收到有人退群")
 	go func() {
 		AddLogItem(cli.Uin, event.Group.Code, event.Member.Uin, ACCEPT, ACCEPT_MEMBER_DECREASE, "")
@@ -201,22 +140,11 @@ func handleMemberLeaveGroup(cli *client.QQClient, event *client.MemberLeaveGroup
 	data.UserId = event.Member.Uin
 	data.BotId = cli.Uin
 	data.MsgType = ws_data.GMC_MEMBER_LEAVE
-	marshal, _ := json.Marshal(data)
-	//err := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
-	//if err != nil {
-	//	log.Info("handleMemberLeaveGroup出错", err)
-	//}
-	WsCon.Write(marshal)
+	_ = SendWSMsg(data)
 }
 
 //入群申请
 func handleUserJoinGroupRequest(cli *client.QQClient, event *client.UserJoinGroupRequest) {
-	defer func() {
-		e := recover()
-		if e != nil {
-			util.PrintStackTrace(e)
-		}
-	}()
 	log.Info("有人申请入群")
 	go func() {
 		AddLogItem(cli.Uin, event.GroupCode, event.RequesterUin, ACCEPT, ACCEPT_GROUP_REQUEST, "")
@@ -232,14 +160,7 @@ func handleUserJoinGroupRequest(cli *client.QQClient, event *client.UserJoinGrou
 	data.NickName = event.RequesterNick
 	data.RequestId = event.RequestId
 	data.Message = event.Message
-	marshal, _ := json.Marshal(data)
-	//bot.WSWLock.Lock()
-	WsCon.Write(marshal)
-	//err := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
-	//if err != nil {
-	//	log.Info("handleUserJoinGroupRequest出错", err)
-	//}
-	//bot.WSWLock.Unlock()
+	_ = SendWSMsg(data)
 	ch := make(chan ws_data.GMCWSData, 1)
 	ws_data.ChanMapLock.Lock()
 	ws_data.ChanMap[event.RequestId] = ch
@@ -262,12 +183,6 @@ func handleUserJoinGroupRequest(cli *client.QQClient, event *client.UserJoinGrou
 
 //机器人被邀请入群
 func handleGroupInvitedRequest(cli *client.QQClient, event *client.GroupInvitedRequest) {
-	defer func() {
-		e := recover()
-		if e != nil {
-			util.PrintStackTrace(e)
-		}
-	}()
 	log.Info("收到机器人被邀请入群")
 	go func() {
 		AddLogItem(cli.Uin, event.GroupCode, event.InvitorUin, ACCEPT, ACCPET_GROUP_INVITED, "")
@@ -282,14 +197,7 @@ func handleGroupInvitedRequest(cli *client.QQClient, event *client.GroupInvitedR
 	data.NickName = event.InvitorNick
 	data.InvitorId = event.InvitorUin
 	data.RequestId = event.RequestId
-	marshal, _ := json.Marshal(data)
-	//bot.WSWLock.Lock()
-	WsCon.Write(marshal)
-	//err := bot.WsCon.WriteMessage(websocket.TextMessage, marshal)
-	//if err != nil {
-	//	log.Info("handleGroupInvitedRequest出错", err)
-	//}
-	//bot.WSWLock.Unlock()
+	_ = SendWSMsg(data)
 	ch := make(chan ws_data.GMCWSData, 1)
 	ws_data.ChanMapLock.Lock()
 	ws_data.ChanMap[event.RequestId] = ch
@@ -314,13 +222,6 @@ func handleGroupInvitedRequest(cli *client.QQClient, event *client.GroupInvitedR
 //发送失败的消息返回给server
 func handleErrorMsg(botId int64, groupID, msgId int64, msg string) {
 	go func() {
-		defer func() {
-			e := recover()
-			if e != nil {
-				util.PrintStackTrace(e)
-			}
-			//bot.WSWLock.Unlock()
-		}()
 		AddLogItem(botId, groupID, 0, SEND, SEND_GROUP, "风控消息:"+msg)
 	}()
 	var data ws_data.GMCWSData
@@ -329,6 +230,17 @@ func handleErrorMsg(botId int64, groupID, msgId int64, msg string) {
 	data.GroupId = groupID
 	data.MessageId = msgId
 	data.Message = msg
+	_ = SendWSMsg(data)
+}
+
+func SendWSMsg(data ws_data.GMCWSData) error {
+	defer func() {
+		e := recover()
+		if e != nil {
+			util.PrintStackTrace(e)
+		}
+	}()
 	marshal, _ := json.Marshal(data)
-	WsCon.Write(marshal)
+	_, err := WsCon.Write(marshal)
+	return err
 }

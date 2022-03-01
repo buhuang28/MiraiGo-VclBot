@@ -10,6 +10,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 	log "github.com/sirupsen/logrus"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -189,6 +190,7 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 	record.EventId = ret.Id
 	record.InternalId = ret.InternalId
 	record.GroupCode = ret.GroupCode
+	record.Time = time.Now().Unix()
 	recordList := GroupMsgRecordMap[msgId]
 	if len(recordList) == 0 {
 		var newRecordList []MessageRecord
@@ -196,6 +198,15 @@ func BuHuangSendGroupMsg(cli *client.QQClient, miraiMsg []message.IMessageElemen
 	}
 	recordList = append(recordList, record)
 	GroupMsgRecordMap[msgId] = recordList
+
+	if len(GroupMsgRecordMap) > 10000 {
+		for k, v := range GroupMsgRecordMap {
+			if time.Now().Unix()-v[0].Time > 12000 {
+				delete(GroupMsgRecordMap, k)
+			}
+		}
+		runtime.GC()
+	}
 	return int64(ret.Id)
 }
 

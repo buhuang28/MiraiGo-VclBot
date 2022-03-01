@@ -1,7 +1,7 @@
 package ws_data
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -16,7 +16,7 @@ func HandleCallBackEvent(data GMCWSData) {
 	defer func() {
 		e := recover()
 		if e != nil {
-			fmt.Println(e)
+			log.Info(e)
 		}
 		ChanMapLock.Unlock()
 	}()
