@@ -6,6 +6,11 @@ Event事件文档自己开个websocket-server试试，目前咕了，下次一�
 Api文档目前也咕了大部分，就写了一小部分Api，下次一定补上
 
 
+![Image text](https://github.com/buhuang28/MiraiGo-VclBot/blob/master/vclbot.jpg)
+
+
+
+
 ## API
 
 ##### 发送私聊
